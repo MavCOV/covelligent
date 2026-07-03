@@ -3,6 +3,8 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertUserSchema } from "@shared/schema";
 import { all as dbAll } from "./db";
+import { streamPerplexity, queryPerplexity } from "./ai";
+import { signup, login, logout, getMe, requireUser } from "./userAuth";
 
 // Engines
 import * as versionEngine from "./engines/version-engine";
@@ -11,37 +13,15 @@ import * as analyticsEngine from "./engines/analytics-engine";
 import { adminLogin, requireAdmin } from "./auth";
 import { createCheckoutSession, createPortalSession, handleWebhook } from "./stripe";
 
-// ─── Mock AI response ────────────────────────────────────────────────────────
-function generateAIResponse(query: string): { content: string; sources: string[] } {
-  const responses = [
-    {
-      content: `Great question about "${query}". Based on my analysis of multiple sources, here's what I found:\n\nThe topic you're asking about is multifaceted and has several important dimensions to consider. Recent research and expert opinions suggest that this area has seen significant developments over the past few years.\n\n**Key findings:**\n- The fundamental principles remain consistent across major studies\n- New methodologies have emerged that challenge older assumptions\n- Practical applications are expanding rapidly in various sectors\n\nThe consensus among leading experts points toward a nuanced understanding that balances multiple factors. I've synthesized information from several authoritative sources to give you the most accurate picture possible.`,
-      sources: ["https://www.nature.com", "https://www.scientificamerican.com", "https://www.bbc.com/news"]
-    },
-    {
-      content: `Here's a comprehensive answer to your query about "${query}":\n\nThis is a fascinating area that I've researched thoroughly. Let me break down what you need to know:\n\n**Overview**\nThe subject has deep historical roots while also evolving rapidly in modern contexts. Understanding it requires looking at both the foundational elements and recent developments.\n\n**Current State**\nAs of the latest information available, the field is experiencing notable growth and transformation. Experts across disciplines are weighing in with diverse perspectives.\n\n**Practical Implications**\nFor most people, the most relevant aspects involve day-to-day applications and decision-making frameworks that can be immediately applied.\n\nI'll continue searching for more specific details if you'd like to dive deeper into any particular aspect.`,
-      sources: ["https://www.reuters.com", "https://www.theguardian.com", "https://arxiv.org"]
-    }
-  ];
-  return responses[Math.floor(Math.random() * responses.length)];
-}
-
 export async function registerRoutes(httpServer: Server, app: Express): Promise<Server> {
 
-  // ── Core: Demo user ─────────────────────────────────────────────────────────
-  app.get("/api/demo-user", async (req, res) => {
-    let user = await storage.getUserByEmail("demo@covelligent.com");
-    if (!user) {
-      user = await storage.createUser({
-        name: "Alex Rivera",
-        email: "demo@covelligent.com",
-        plan: "pro",
-        avatar: null,
-      });
-    }
-    res.json(user);
-  });
+  // ── User Auth ────────────────────────────────────────────────────────────────
+  app.post("/api/auth/signup", signup);
+  app.post("/api/auth/login", login);
+  app.post("/api/auth/logout", logout);
+  app.get("/api/auth/me", getMe);
 
+  // ── Core: Users ──────────────────────────────────────────────────────────────
   app.get("/api/users/:id", async (req, res) => {
     const user = await storage.getUser(Number(req.params.id));
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -94,48 +74,134 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     const conv = await storage.getConversation(convId);
     if (!conv) return res.status(404).json({ message: "Conversation not found" });
 
-    await storage.createMessage({
-      conversation_id: convId, role: "user",
-      content: req.body.content, sources: null,
-    });
+    const { content, mode } = req.body;
 
-    const aiResponse = generateAIResponse(req.body.content);
-    const assistantMsg = await storage.createMessage({
-      conversation_id: convId, role: "assistant",
-      content: aiResponse.content,
-      sources: JSON.stringify(aiResponse.sources),
-    });
+    // Save user message
+    await storage.createMessage({ conversation_id: convId, role: "user", content, sources: null });
 
-    // Track analytics
-    analyticsEngine.trackEvent("message_sent", { properties: { convId } });
+    // Get conversation history for context
+    const history = await storage.getMessages(convId) as any[];
+    const conversationHistory = history.slice(-20).map((m: any) => ({
+      role: m.role,
+      content: m.content,
+    }));
 
-    res.status(201).json({ assistantMessage: assistantMsg });
+    try {
+      // Real AI response
+      const aiResult = await queryPerplexity(content, mode || "web", conversationHistory);
+      const assistantMsg = await storage.createMessage({
+        conversation_id: convId,
+        role: "assistant",
+        content: aiResult.content,
+        sources: JSON.stringify(aiResult.citations),
+      });
+
+      analyticsEngine.trackEvent("message_sent", { properties: { convId, mode } });
+      res.status(201).json({ assistantMessage: assistantMsg });
+    } catch (err: any) {
+      console.error("AI error:", err.message);
+      res.status(500).json({ message: "AI service error: " + err.message });
+    }
   });
 
-  // ── Core: Search ────────────────────────────────────────────────────────────
+  // ── STREAMING Search — the main search endpoint ─────────────────────────────
   app.post("/api/search", async (req, res) => {
-    const { query, userId } = req.body;
+    const { query, userId, mode } = req.body;
     if (!query) return res.status(400).json({ message: "Query required" });
 
+    // Track the search
     if (userId) {
       await storage.createSearch({ user_id: Number(userId), query });
     }
 
+    // Create conversation
     const conv = await storage.createConversation({
       user_id: Number(userId) || 1,
-      title: query.length > 60 ? query.slice(0, 60) + "..." : query,
+      title: query.length > 80 ? query.slice(0, 80) + "..." : query,
     });
 
+    // Save user message
     await storage.createMessage({ conversation_id: conv.id, role: "user", content: query, sources: null });
-    const aiResponse = generateAIResponse(query);
-    const assistantMsg = await storage.createMessage({
-      conversation_id: conv.id, role: "assistant",
-      content: aiResponse.content,
-      sources: JSON.stringify(aiResponse.sources),
-    });
 
-    analyticsEngine.trackEvent("search", { userId, properties: { query: query.slice(0, 60) } });
-    res.json({ conversation: conv, answer: assistantMsg });
+    try {
+      const aiResult = await queryPerplexity(query, mode || "web", []);
+      const assistantMsg = await storage.createMessage({
+        conversation_id: conv.id,
+        role: "assistant",
+        content: aiResult.content,
+        sources: JSON.stringify(aiResult.citations),
+      });
+
+      analyticsEngine.trackEvent("search", { userId: Number(userId), properties: { query: query.slice(0, 60), mode } });
+      res.json({ conversation: conv, answer: assistantMsg, citations: aiResult.citations });
+    } catch (err: any) {
+      console.error("Search AI error:", err.message);
+      res.status(500).json({ message: "AI service error: " + err.message });
+    }
+  });
+
+  // ── STREAMING endpoint — real-time token-by-token response ─────────────────
+  app.post("/api/search/stream", async (req, res) => {
+    const { query, userId, mode, conversationId } = req.body;
+    if (!query) return res.status(400).json({ message: "Query required" });
+
+    // SSE headers
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.flushHeaders();
+
+    const sendEvent = (data: object) => {
+      res.write(`data: ${JSON.stringify(data)}\n\n`);
+    };
+
+    try {
+      // Create or get conversation
+      let convId = conversationId;
+      if (!convId) {
+        if (userId) await storage.createSearch({ user_id: Number(userId), query });
+        const conv = await storage.createConversation({
+          user_id: Number(userId) || 1,
+          title: query.length > 80 ? query.slice(0, 80) + "..." : query,
+        });
+        convId = conv.id;
+        await storage.createMessage({ conversation_id: convId, role: "user", content: query, sources: null });
+        sendEvent({ type: "conversation", conversationId: convId });
+      }
+
+      // Get history for context
+      const history = await storage.getMessages(convId) as any[];
+      const conversationHistory = history.slice(-20).map((m: any) => ({ role: m.role, content: m.content }));
+
+      let fullContent = "";
+      let citations: string[] = [];
+
+      // Stream tokens
+      for await (const chunk of streamPerplexity(query, mode || "web", conversationHistory)) {
+        if (chunk.type === "delta" && chunk.content) {
+          fullContent += chunk.content;
+          sendEvent({ type: "delta", content: chunk.content });
+        } else if (chunk.type === "citations" && chunk.citations) {
+          citations = chunk.citations;
+          sendEvent({ type: "citations", citations });
+        } else if (chunk.type === "done") {
+          // Save complete message to DB
+          const assistantMsg = await storage.createMessage({
+            conversation_id: convId,
+            role: "assistant",
+            content: fullContent,
+            sources: JSON.stringify(citations),
+          });
+          analyticsEngine.trackEvent("search_stream", { userId: Number(userId), properties: { mode } });
+          sendEvent({ type: "done", messageId: (assistantMsg as any).id });
+        }
+      }
+    } catch (err: any) {
+      console.error("Stream error:", err.message);
+      sendEvent({ type: "error", message: err.message });
+    } finally {
+      res.end();
+    }
   });
 
   app.get("/api/users/:userId/searches", async (req, res) => {
@@ -143,158 +209,100 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   });
 
   // ── Version Engine ──────────────────────────────────────────────────────────
-  app.get("/api/admin/versions", async (_req, res) => {
-    res.json(versionEngine.getAllVersions());
-  });
-
-  app.get("/api/admin/versions/current", async (_req, res) => {
-    res.json(versionEngine.getCurrentVersion());
-  });
-
+  app.get("/api/admin/versions", async (_req, res) => res.json(await versionEngine.getAllVersions()));
+  app.get("/api/admin/versions/current", async (_req, res) => res.json(await versionEngine.getCurrentVersion()));
   app.post("/api/admin/versions/:id/promote", async (req, res) => {
-    versionEngine.promoteVersion(Number(req.params.id));
+    await versionEngine.promoteVersion(Number(req.params.id));
     res.json({ success: true });
   });
-
-  app.post("/api/admin/versions/auto-bump", (_req, res) => {
-    const draft = versionEngine.autoVersionBump();
+  app.post("/api/admin/versions/auto-bump", async (_req, res) => {
+    const draft = await versionEngine.autoVersionBump();
     res.json(draft ?? { message: "No new shipped items to bump" });
   });
-
-  app.get("/api/admin/feature-flags", async (_req, res) => {
-    res.json(versionEngine.getFeatureFlags());
-  });
-
+  app.get("/api/admin/feature-flags", async (_req, res) => res.json(await versionEngine.getFeatureFlags()));
   app.patch("/api/admin/feature-flags/:key", async (req, res) => {
     const { enabled, rolloutPct } = req.body;
-    if (typeof enabled === "boolean") versionEngine.toggleFeatureFlag(req.params.key, enabled);
-    if (typeof rolloutPct === "number") versionEngine.setRolloutPct(req.params.key, rolloutPct);
+    if (typeof enabled === "boolean") await versionEngine.toggleFeatureFlag(req.params.key, enabled);
+    if (typeof rolloutPct === "number") await versionEngine.setRolloutPct(req.params.key, rolloutPct);
     res.json({ success: true });
   });
-
-  app.get("/api/admin/roadmap", async (_req, res) => {
-    res.json(versionEngine.getRoadmap());
-  });
-
+  app.get("/api/admin/roadmap", async (_req, res) => res.json(await versionEngine.getRoadmap()));
   app.patch("/api/admin/roadmap/:id/status", async (req, res) => {
-    versionEngine.advanceRoadmapItem(Number(req.params.id), req.body.status);
+    await versionEngine.advanceRoadmapItem(Number(req.params.id), req.body.status);
     res.json({ success: true });
   });
-
   app.post("/api/admin/roadmap/:id/vote", async (req, res) => {
-    versionEngine.voteRoadmapItem(Number(req.params.id));
+    await versionEngine.voteRoadmapItem(Number(req.params.id));
     res.json({ success: true });
   });
 
   // ── Marketing Engine ────────────────────────────────────────────────────────
-  app.get("/api/admin/campaigns", async (_req, res) => {
-    res.json(marketingEngine.getCampaigns());
-  });
-
+  app.get("/api/admin/campaigns", async (_req, res) => res.json(await marketingEngine.getCampaigns()));
   app.post("/api/admin/campaigns/:id/generate-variant", async (req, res) => {
-    const variant = marketingEngine.generateAdVariant(Number(req.params.id));
+    const variant = await marketingEngine.generateAdVariant(Number(req.params.id));
     if (!variant) return res.status(404).json({ message: "Campaign not found" });
     res.json(variant);
   });
-
-  app.post("/api/admin/campaigns/auto-pause", (_req, res) => {
-    const count = marketingEngine.autoPauseUnderperformers();
+  app.post("/api/admin/campaigns/auto-pause", async (_req, res) => {
+    const count = await marketingEngine.autoPauseUnderperformers();
     res.json({ paused: count });
   });
-
-  app.get("/api/admin/social-posts", async (_req, res) => {
-    res.json(marketingEngine.getSocialPosts());
-  });
-
-  app.post("/api/admin/social-posts/generate-weekly", (_req, res) => {
-    const posts = marketingEngine.generateWeeklySocialContent();
+  app.get("/api/admin/social-posts", async (_req, res) => res.json(await marketingEngine.getSocialPosts()));
+  app.post("/api/admin/social-posts/generate-weekly", async (_req, res) => {
+    const posts = await marketingEngine.generateWeeklySocialContent();
     res.json({ generated: posts });
   });
-
-  app.post("/api/admin/social-posts/process-scheduled", (_req, res) => {
-    const count = marketingEngine.processScheduledPosts();
+  app.post("/api/admin/social-posts/process-scheduled", async (_req, res) => {
+    const count = await marketingEngine.processScheduledPosts();
     res.json({ processed: count });
   });
-
-  app.get("/api/admin/email-sequences", async (_req, res) => {
-    res.json(marketingEngine.getEmailSequences());
-  });
-
-  app.get("/api/admin/ab-tests", async (_req, res) => {
-    res.json(marketingEngine.getAbTests());
-  });
-
-  app.post("/api/admin/ab-tests/analyze", (_req, res) => {
-    const concluded = marketingEngine.analyzeAbTests();
+  app.get("/api/admin/email-sequences", async (_req, res) => res.json(await marketingEngine.getEmailSequences()));
+  app.get("/api/admin/ab-tests", async (_req, res) => res.json(await marketingEngine.getAbTests()));
+  app.post("/api/admin/ab-tests/analyze", async (_req, res) => {
+    const concluded = await marketingEngine.analyzeAbTests();
     res.json({ concluded });
   });
 
   // ── Analytics Engine ────────────────────────────────────────────────────────
   app.get("/api/admin/analytics/growth", async (req, res) => {
     const days = Number(req.query.days) || 14;
-    res.json(analyticsEngine.getGrowthMetrics(days));
+    res.json(await analyticsEngine.getGrowthMetrics(days));
   });
-
-  app.get("/api/admin/analytics/kpis", async (_req, res) => {
-    res.json(analyticsEngine.getGrowthKPIs());
-  });
-
-  app.get("/api/admin/analytics/funnel", async (_req, res) => {
-    res.json(analyticsEngine.getFunnelMetrics());
-  });
-
-  app.get("/api/admin/analytics/churn-risk", async (_req, res) => {
-    res.json(analyticsEngine.getChurnRiskUsers());
-  });
-
-  app.get("/api/admin/analytics/events", async (_req, res) => {
-    res.json(analyticsEngine.getRecentEvents(100));
-  });
-
-  app.post("/api/admin/analytics/compute-daily", (_req, res) => {
-    analyticsEngine.computeDailyMetrics();
+  app.get("/api/admin/analytics/kpis", async (_req, res) => res.json(await analyticsEngine.getGrowthKPIs()));
+  app.get("/api/admin/analytics/funnel", async (_req, res) => res.json(await analyticsEngine.getFunnelMetrics()));
+  app.get("/api/admin/analytics/churn-risk", async (_req, res) => res.json(await analyticsEngine.getChurnRiskUsers()));
+  app.get("/api/admin/analytics/events", async (_req, res) => res.json(await analyticsEngine.getRecentEvents(100)));
+  app.post("/api/admin/analytics/compute-daily", async (_req, res) => {
+    await analyticsEngine.computeDailyMetrics();
     res.json({ success: true });
   });
-
-  app.get("/api/admin/system/health", async (_req, res) => {
-    res.json(analyticsEngine.getSystemHealth());
-  });
-
+  app.get("/api/admin/system/health", async (_req, res) => res.json(await analyticsEngine.getSystemHealth()));
   app.get("/api/admin/system/logs", async (req, res) => {
     const limit = Number(req.query.limit) || 50;
-    const logs = await dbAll(
-      "SELECT * FROM system_logs ORDER BY created_at DESC LIMIT ?",
-      [limit]
-    );
-    res.json(logs);
+    res.json(await dbAll("SELECT * FROM system_logs ORDER BY created_at DESC LIMIT ?", [limit]));
   });
 
-  // ── Analytics event tracking (client-side) ──────────────────────────────────
+  // ── Analytics event tracking ─────────────────────────────────────────────────
   app.post("/api/track", async (req, res) => {
     const { event, page, userId, sessionId, referrer, properties } = req.body;
     if (!event) return res.status(400).json({ message: "event required" });
-    analyticsEngine.trackEvent(event, { page, userId, sessionId, referrer, properties });
+    await analyticsEngine.trackEvent(event, { page, userId, sessionId, referrer, properties });
     res.json({ ok: true });
   });
 
-
-  // ── Health check ────────────────────────────────────────────────────────────
+  // ── Health check ─────────────────────────────────────────────────────────────
   app.get("/api/health", async (_req, res) => {
-    res.json({ status: "ok", version: "1.0.0", uptime: process.uptime() });
+    res.json({ status: "ok", version: "1.0.0", uptime: process.uptime(), ai: !!process.env.PPLX_API_KEY });
   });
 
   // ── Admin Auth ───────────────────────────────────────────────────────────────
   app.post("/api/admin/login", adminLogin);
-
-  // Protect all other /api/admin/* routes
   app.use("/api/admin", (req, res, next) => {
-    // login is already handled above, skip for it
     if (req.path === "/login") return next();
     requireAdmin(req, res, next);
   });
 
   // ── Stripe Payments ──────────────────────────────────────────────────────────
-  // Webhook must use raw body — register before json middleware applies
   app.post("/api/stripe/webhook", handleWebhook);
   app.post("/api/stripe/checkout", createCheckoutSession);
   app.post("/api/stripe/portal", createPortalSession);

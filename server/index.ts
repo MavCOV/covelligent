@@ -64,6 +64,9 @@ app.use((req, res, next) => {
 
 (async () => {
   await initDb();
+  // Ensure auth columns exist (safe migration)
+  const { ensureAuthColumns } = await import("./userAuth");
+  await ensureAuthColumns();
   // Boot system engines
   const { seedSystem } = await import("./engines/seed");
   seedSystem();
