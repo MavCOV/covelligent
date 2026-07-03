@@ -31,10 +31,10 @@ function generateAIResponse(query: string): { content: string; sources: string[]
 export async function registerRoutes(httpServer: Server, app: Express): Promise<Server> {
 
   // ── Core: Demo user ─────────────────────────────────────────────────────────
-  app.get("/api/demo-user", (req, res) => {
-    let user = storage.getUserByEmail("demo@covelligent.com");
+  app.get("/api/demo-user", async (req, res) => {
+    let user = await storage.getUserByEmail("demo@covelligent.com");
     if (!user) {
-      user = storage.createUser({
+      user = await storage.createUser({
         name: "Alex Rivera",
         email: "demo@covelligent.com",
         plan: "pro",
@@ -44,65 +44,65 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     res.json(user);
   });
 
-  app.get("/api/users/:id", (req, res) => {
-    const user = storage.getUser(Number(req.params.id));
+  app.get("/api/users/:id", async (req, res) => {
+    const user = await storage.getUser(Number(req.params.id));
     if (!user) return res.status(404).json({ message: "User not found" });
     res.json(user);
   });
 
-  app.post("/api/users", (req, res) => {
+  app.post("/api/users", async (req, res) => {
     const parsed = insertUserSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: parsed.error.message });
-    res.status(201).json(storage.createUser(parsed.data));
+    res.status(201).json(await storage.createUser(parsed.data));
   });
 
-  app.patch("/api/users/:id/plan", (req, res) => {
+  app.patch("/api/users/:id/plan", async (req, res) => {
     const { plan } = req.body;
     if (!["free", "pro"].includes(plan)) return res.status(400).json({ message: "Invalid plan" });
-    const user = storage.updateUserPlan(Number(req.params.id), plan);
+    const user = await storage.updateUserPlan(Number(req.params.id), plan);
     if (!user) return res.status(404).json({ message: "User not found" });
     res.json(user);
   });
 
   // ── Core: Conversations ─────────────────────────────────────────────────────
-  app.get("/api/users/:userId/conversations", (req, res) => {
-    res.json(storage.getConversations(Number(req.params.userId)));
+  app.get("/api/users/:userId/conversations", async (req, res) => {
+    res.json(await storage.getConversations(Number(req.params.userId)));
   });
 
-  app.post("/api/conversations", (req, res) => {
+  app.post("/api/conversations", async (req, res) => {
     const parsed = insertConversationSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: parsed.error.message });
-    res.status(201).json(storage.createConversation(parsed.data));
+    res.status(201).json(await storage.createConversation(parsed.data));
   });
 
-  app.get("/api/conversations/:id", (req, res) => {
-    const conv = storage.getConversation(Number(req.params.id));
+  app.get("/api/conversations/:id", async (req, res) => {
+    const conv = await storage.getConversation(Number(req.params.id));
     if (!conv) return res.status(404).json({ message: "Not found" });
     res.json(conv);
   });
 
-  app.delete("/api/conversations/:id", (req, res) => {
-    storage.deleteConversation(Number(req.params.id));
+  app.delete("/api/conversations/:id", async (req, res) => {
+    await storage.deleteConversation(Number(req.params.id));
     res.json({ success: true });
   });
 
   // ── Core: Messages ──────────────────────────────────────────────────────────
-  app.get("/api/conversations/:id/messages", (req, res) => {
-    res.json(storage.getMessages(Number(req.params.id)));
+  app.get("/api/conversations/:id/messages", async (req, res) => {
+    res.json(await storage.getMessages(Number(req.params.id)));
   });
 
-  app.post("/api/conversations/:id/messages", (req, res) => {
+  app.post("/api/conversations/:id/messages", async (req, res) => {
     const convId = Number(req.params.id);
-    const conv = storage.getConversation(convId);
+    const conv = await storage.getConversation(convId);
     if (!conv) return res.status(404).json({ message: "Conversation not found" });
 
-    storage.createMessage({
+    await storage.createMessage({
       conversationId: convId, role: "user",
       content: req.body.content, sources: null, createdAt: new Date().toISOString(),
     });
 
     const aiResponse = generateAIResponse(req.body.content);
-    const assistantMsg = storage.createMessage({
+    const assistantMsg = await storage.createMessage({
       conversationId: convId, role: "assistant",
       content: aiResponse.content,
       sources: JSON.stringify(aiResponse.sources),
@@ -116,23 +116,23 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   });
 
   // ── Core: Search ────────────────────────────────────────────────────────────
-  app.post("/api/search", (req, res) => {
+  app.post("/api/search", async (req, res) => {
     const { query, userId } = req.body;
     if (!query) return res.status(400).json({ message: "Query required" });
 
     if (userId) {
-      storage.createSearch({ userId, query, createdAt: new Date().toISOString() });
+      await storage.createSearch({ userId, query, createdAt: new Date().toISOString() });
     }
 
-    const conv = storage.createConversation({
+    const conv = await storage.createConversation({
       userId: userId || 1,
       title: query.length > 60 ? query.slice(0, 60) + "..." : query,
       createdAt: new Date().toISOString(),
     });
 
-    storage.createMessage({ conversationId: conv.id, role: "user", content: query, sources: null, createdAt: new Date().toISOString() });
+    await storage.createMessage({ conversationId: conv.id, role: "user", content: query, sources: null, createdAt: new Date().toISOString() });
     const aiResponse = generateAIResponse(query);
-    const assistantMsg = storage.createMessage({
+    const assistantMsg = await storage.createMessage({
       conversationId: conv.id, role: "assistant",
       content: aiResponse.content,
       sources: JSON.stringify(aiResponse.sources),
@@ -143,20 +143,20 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     res.json({ conversation: conv, answer: assistantMsg });
   });
 
-  app.get("/api/users/:userId/searches", (req, res) => {
-    res.json(storage.getRecentSearches(Number(req.params.userId)));
+  app.get("/api/users/:userId/searches", async (req, res) => {
+    res.json(await storage.getRecentSearches(Number(req.params.userId)));
   });
 
   // ── Version Engine ──────────────────────────────────────────────────────────
-  app.get("/api/admin/versions", (_req, res) => {
+  app.get("/api/admin/versions", async (_req, res) => {
     res.json(versionEngine.getAllVersions());
   });
 
-  app.get("/api/admin/versions/current", (_req, res) => {
+  app.get("/api/admin/versions/current", async (_req, res) => {
     res.json(versionEngine.getCurrentVersion());
   });
 
-  app.post("/api/admin/versions/:id/promote", (req, res) => {
+  app.post("/api/admin/versions/:id/promote", async (req, res) => {
     versionEngine.promoteVersion(Number(req.params.id));
     res.json({ success: true });
   });
@@ -166,37 +166,37 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     res.json(draft ?? { message: "No new shipped items to bump" });
   });
 
-  app.get("/api/admin/feature-flags", (_req, res) => {
+  app.get("/api/admin/feature-flags", async (_req, res) => {
     res.json(versionEngine.getFeatureFlags());
   });
 
-  app.patch("/api/admin/feature-flags/:key", (req, res) => {
+  app.patch("/api/admin/feature-flags/:key", async (req, res) => {
     const { enabled, rolloutPct } = req.body;
     if (typeof enabled === "boolean") versionEngine.toggleFeatureFlag(req.params.key, enabled);
     if (typeof rolloutPct === "number") versionEngine.setRolloutPct(req.params.key, rolloutPct);
     res.json({ success: true });
   });
 
-  app.get("/api/admin/roadmap", (_req, res) => {
+  app.get("/api/admin/roadmap", async (_req, res) => {
     res.json(versionEngine.getRoadmap());
   });
 
-  app.patch("/api/admin/roadmap/:id/status", (req, res) => {
+  app.patch("/api/admin/roadmap/:id/status", async (req, res) => {
     versionEngine.advanceRoadmapItem(Number(req.params.id), req.body.status);
     res.json({ success: true });
   });
 
-  app.post("/api/admin/roadmap/:id/vote", (req, res) => {
+  app.post("/api/admin/roadmap/:id/vote", async (req, res) => {
     versionEngine.voteRoadmapItem(Number(req.params.id));
     res.json({ success: true });
   });
 
   // ── Marketing Engine ────────────────────────────────────────────────────────
-  app.get("/api/admin/campaigns", (_req, res) => {
+  app.get("/api/admin/campaigns", async (_req, res) => {
     res.json(marketingEngine.getCampaigns());
   });
 
-  app.post("/api/admin/campaigns/:id/generate-variant", (req, res) => {
+  app.post("/api/admin/campaigns/:id/generate-variant", async (req, res) => {
     const variant = marketingEngine.generateAdVariant(Number(req.params.id));
     if (!variant) return res.status(404).json({ message: "Campaign not found" });
     res.json(variant);
@@ -207,7 +207,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     res.json({ paused: count });
   });
 
-  app.get("/api/admin/social-posts", (_req, res) => {
+  app.get("/api/admin/social-posts", async (_req, res) => {
     res.json(marketingEngine.getSocialPosts());
   });
 
@@ -221,11 +221,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     res.json({ processed: count });
   });
 
-  app.get("/api/admin/email-sequences", (_req, res) => {
+  app.get("/api/admin/email-sequences", async (_req, res) => {
     res.json(marketingEngine.getEmailSequences());
   });
 
-  app.get("/api/admin/ab-tests", (_req, res) => {
+  app.get("/api/admin/ab-tests", async (_req, res) => {
     res.json(marketingEngine.getAbTests());
   });
 
@@ -235,24 +235,24 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   });
 
   // ── Analytics Engine ────────────────────────────────────────────────────────
-  app.get("/api/admin/analytics/growth", (req, res) => {
+  app.get("/api/admin/analytics/growth", async (req, res) => {
     const days = Number(req.query.days) || 14;
     res.json(analyticsEngine.getGrowthMetrics(days));
   });
 
-  app.get("/api/admin/analytics/kpis", (_req, res) => {
+  app.get("/api/admin/analytics/kpis", async (_req, res) => {
     res.json(analyticsEngine.getGrowthKPIs());
   });
 
-  app.get("/api/admin/analytics/funnel", (_req, res) => {
+  app.get("/api/admin/analytics/funnel", async (_req, res) => {
     res.json(analyticsEngine.getFunnelMetrics());
   });
 
-  app.get("/api/admin/analytics/churn-risk", (_req, res) => {
+  app.get("/api/admin/analytics/churn-risk", async (_req, res) => {
     res.json(analyticsEngine.getChurnRiskUsers());
   });
 
-  app.get("/api/admin/analytics/events", (_req, res) => {
+  app.get("/api/admin/analytics/events", async (_req, res) => {
     res.json(analyticsEngine.getRecentEvents(100));
   });
 
@@ -261,11 +261,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     res.json({ success: true });
   });
 
-  app.get("/api/admin/system/health", (_req, res) => {
+  app.get("/api/admin/system/health", async (_req, res) => {
     res.json(analyticsEngine.getSystemHealth());
   });
 
-  app.get("/api/admin/system/logs", (req, res) => {
+  app.get("/api/admin/system/logs", async (req, res) => {
     const limit = Number(req.query.limit) || 50;
     const logs = db.select().from(systemLogs)
       .orderBy(desc(systemLogs.createdAt))
@@ -275,7 +275,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   });
 
   // ── Analytics event tracking (client-side) ──────────────────────────────────
-  app.post("/api/track", (req, res) => {
+  app.post("/api/track", async (req, res) => {
     const { event, page, userId, sessionId, referrer, properties } = req.body;
     if (!event) return res.status(400).json({ message: "event required" });
     analyticsEngine.trackEvent(event, { page, userId, sessionId, referrer, properties });
@@ -284,7 +284,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
 
   // ── Health check ────────────────────────────────────────────────────────────
-  app.get("/api/health", (_req, res) => {
+  app.get("/api/health", async (_req, res) => {
     res.json({ status: "ok", version: "1.0.0", uptime: process.uptime() });
   });
 
@@ -304,8 +304,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.post("/api/stripe/checkout", createCheckoutSession);
   app.post("/api/stripe/portal", createPortalSession);
 
-  app.get("/api/users/:id/subscription", (req, res) => {
-    const sub = storage.getSubscription(Number(req.params.id));
+  app.get("/api/users/:id/subscription", async (req, res) => {
+    const sub = await storage.getSubscription(Number(req.params.id));
     res.json(sub || { status: "inactive", plan: "free" });
   });
 

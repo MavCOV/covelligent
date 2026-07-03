@@ -15217,11 +15217,11 @@ var require_mime_types = __commonJS({
       }
       return exts[0];
     }
-    function lookup(path3) {
-      if (!path3 || typeof path3 !== "string") {
+    function lookup(path2) {
+      if (!path2 || typeof path2 !== "string") {
         return false;
       }
-      var extension2 = extname("x." + path3).toLowerCase().slice(1);
+      var extension2 = extname("x." + path2).toLowerCase().slice(1);
       if (!extension2) {
         return false;
       }
@@ -18894,13 +18894,13 @@ var require_view = __commonJS({
   "node_modules/express/lib/view.js"(exports2, module2) {
     "use strict";
     var debug = require_src()("express:view");
-    var path3 = require("node:path");
+    var path2 = require("node:path");
     var fs2 = require("node:fs");
-    var dirname = path3.dirname;
-    var basename = path3.basename;
-    var extname = path3.extname;
-    var join = path3.join;
-    var resolve = path3.resolve;
+    var dirname = path2.dirname;
+    var basename = path2.basename;
+    var extname = path2.extname;
+    var join = path2.join;
+    var resolve = path2.resolve;
     module2.exports = View2;
     function View2(name, options) {
       var opts = options || {};
@@ -18929,17 +18929,17 @@ var require_view = __commonJS({
       this.path = this.lookup(fileName);
     }
     View2.prototype.lookup = function lookup(name) {
-      var path4;
+      var path3;
       var roots = [].concat(this.root);
       debug('lookup "%s"', name);
-      for (var i = 0; i < roots.length && !path4; i++) {
+      for (var i = 0; i < roots.length && !path3; i++) {
         var root = roots[i];
         var loc = resolve(root, name);
         var dir = dirname(loc);
         var file = basename(loc);
-        path4 = this.resolve(dir, file);
+        path3 = this.resolve(dir, file);
       }
-      return path4;
+      return path3;
     };
     View2.prototype.render = function render(options, callback) {
       var sync = true;
@@ -18961,21 +18961,21 @@ var require_view = __commonJS({
     };
     View2.prototype.resolve = function resolve2(dir, file) {
       var ext = this.ext;
-      var path4 = join(dir, file);
-      var stat = tryStat(path4);
+      var path3 = join(dir, file);
+      var stat = tryStat(path3);
       if (stat && stat.isFile()) {
-        return path4;
+        return path3;
       }
-      path4 = join(dir, basename(file, ext), "index" + ext);
-      stat = tryStat(path4);
+      path3 = join(dir, basename(file, ext), "index" + ext);
+      stat = tryStat(path3);
       if (stat && stat.isFile()) {
-        return path4;
+        return path3;
       }
     };
-    function tryStat(path4) {
-      debug('stat "%s"', path4);
+    function tryStat(path3) {
+      debug('stat "%s"', path3);
       try {
-        return fs2.statSync(path4);
+        return fs2.statSync(path3);
       } catch (e) {
         return void 0;
       }
@@ -20215,15 +20215,15 @@ var require_dist3 = __commonJS({
       let index = 0;
       function consumeUntil(end) {
         const output = [];
-        let path3 = "";
+        let path2 = "";
         function writePath() {
-          if (!path3)
+          if (!path2)
             return;
           output.push({
             type: "text",
-            value: encodePath(path3)
+            value: encodePath(path2)
           });
-          path3 = "";
+          path2 = "";
         }
         while (index < chars.length) {
           const value = chars[index++];
@@ -20235,7 +20235,7 @@ var require_dist3 = __commonJS({
             if (index === chars.length) {
               throw new PathError(`Unexpected end after \\ at index ${index}`, str);
             }
-            path3 += chars[index++];
+            path2 += chars[index++];
             continue;
           }
           if (value === ":" || value === "*") {
@@ -20279,7 +20279,7 @@ var require_dist3 = __commonJS({
           if (value === "}" || value === "(" || value === ")" || value === "[" || value === "]" || value === "+" || value === "?" || value === "!") {
             throw new PathError(`Unexpected ${value} at index ${index - 1}`, str);
           }
-          path3 += value;
+          path2 += value;
         }
         if (end) {
           throw new PathError(`Unexpected end at index ${index}, expected ${end}`, str);
@@ -20289,17 +20289,17 @@ var require_dist3 = __commonJS({
       }
       return new TokenData(consumeUntil(""), str);
     }
-    function compile(path3, options = {}) {
+    function compile(path2, options = {}) {
       const { encode = encodeURIComponent, delimiter = DEFAULT_DELIMITER } = options;
-      const data = typeof path3 === "object" ? path3 : parse(path3, options);
+      const data = typeof path2 === "object" ? path2 : parse(path2, options);
       const fn = tokensToFunction(data.tokens, delimiter, encode);
-      return function path4(params = {}) {
+      return function path3(params = {}) {
         const missing = [];
-        const path5 = fn(params, missing);
+        const path4 = fn(params, missing);
         if (missing.length) {
           throw new TypeError(`Missing parameters: ${missing.join(", ")}`);
         }
-        return path5;
+        return path4;
       };
     }
     function tokensToFunction(tokens, delimiter, encode) {
@@ -20361,9 +20361,9 @@ var require_dist3 = __commonJS({
         return encodeValue(value);
       };
     }
-    function match(path3, options = {}) {
+    function match(path2, options = {}) {
       const { decode = decodeURIComponent, delimiter = DEFAULT_DELIMITER } = options;
-      const { regexp, keys } = pathToRegexp(path3, options);
+      const { regexp, keys } = pathToRegexp(path2, options);
       const decoders = keys.map((key) => {
         if (decode === false)
           return NOOP_VALUE;
@@ -20375,7 +20375,7 @@ var require_dist3 = __commonJS({
         const m = regexp.exec(input);
         if (!m)
           return false;
-        const path4 = m[0];
+        const path3 = m[0];
         const params = /* @__PURE__ */ Object.create(null);
         for (let i = 1; i < m.length; i++) {
           if (m[i] === void 0)
@@ -20384,21 +20384,21 @@ var require_dist3 = __commonJS({
           const decoder = decoders[i - 1];
           params[key.name] = decoder(m[i]);
         }
-        return { path: path4, params };
+        return { path: path3, params };
       };
     }
-    function pathToRegexp(path3, options = {}) {
+    function pathToRegexp(path2, options = {}) {
       const { delimiter = DEFAULT_DELIMITER, end = true, sensitive = false, trailing = true } = options;
       const keys = [];
       let source = "";
       let combinations = 0;
-      function process2(path4) {
-        if (Array.isArray(path4)) {
-          for (const p of path4)
+      function process2(path3) {
+        if (Array.isArray(path3)) {
+          for (const p of path3)
             process2(p);
           return;
         }
-        const data = typeof path4 === "object" ? path4 : parse(path4, options);
+        const data = typeof path3 === "object" ? path3 : parse(path3, options);
         flatten(data.tokens, 0, [], (tokens) => {
           if (combinations >= 256) {
             throw new PathError("Too many path combinations", data.originalPath);
@@ -20409,7 +20409,7 @@ var require_dist3 = __commonJS({
           combinations++;
         });
       }
-      process2(path3);
+      process2(path2);
       let pattern = `^(?:${source})`;
       if (trailing)
         pattern += "(?:" + escape2(delimiter) + "$)?";
@@ -20549,18 +20549,18 @@ var require_layer = __commonJS({
     var TRAILING_SLASH_REGEXP = /\/+$/;
     var MATCHING_GROUP_REGEXP = /\((?:\?<(.*?)>)?(?!\?)/g;
     module2.exports = Layer;
-    function Layer(path3, options, fn) {
+    function Layer(path2, options, fn) {
       if (!(this instanceof Layer)) {
-        return new Layer(path3, options, fn);
+        return new Layer(path2, options, fn);
       }
-      debug("new %o", path3);
+      debug("new %o", path2);
       const opts = options || {};
       this.handle = fn;
       this.keys = [];
       this.name = fn.name || "<anonymous>";
       this.params = void 0;
       this.path = void 0;
-      this.slash = path3 === "/" && opts.end === false;
+      this.slash = path2 === "/" && opts.end === false;
       function matcher(_path) {
         if (_path instanceof RegExp) {
           const keys = [];
@@ -20599,7 +20599,7 @@ var require_layer = __commonJS({
           decode: decodeParam
         });
       }
-      this.matchers = Array.isArray(path3) ? path3.map(matcher) : [matcher(path3)];
+      this.matchers = Array.isArray(path2) ? path2.map(matcher) : [matcher(path2)];
     }
     Layer.prototype.handleError = function handleError(error, req, res, next) {
       const fn = this.handle;
@@ -20639,9 +20639,9 @@ var require_layer = __commonJS({
         next(err);
       }
     };
-    Layer.prototype.match = function match(path3) {
+    Layer.prototype.match = function match(path2) {
       let match2;
-      if (path3 != null) {
+      if (path2 != null) {
         if (this.slash) {
           this.params = {};
           this.path = "";
@@ -20649,7 +20649,7 @@ var require_layer = __commonJS({
         }
         let i = 0;
         while (!match2 && i < this.matchers.length) {
-          match2 = this.matchers[i](path3);
+          match2 = this.matchers[i](path2);
           i++;
         }
       }
@@ -20677,13 +20677,13 @@ var require_layer = __commonJS({
         throw err;
       }
     }
-    function loosen(path3) {
-      if (path3 instanceof RegExp || path3 === "/") {
-        return path3;
+    function loosen(path2) {
+      if (path2 instanceof RegExp || path2 === "/") {
+        return path2;
       }
-      return Array.isArray(path3) ? path3.map(function(p) {
+      return Array.isArray(path2) ? path2.map(function(p) {
         return loosen(p);
-      }) : String(path3).replace(TRAILING_SLASH_REGEXP, "");
+      }) : String(path2).replace(TRAILING_SLASH_REGEXP, "");
     }
   }
 });
@@ -20699,9 +20699,9 @@ var require_route = __commonJS({
     var flatten = Array.prototype.flat;
     var methods = METHODS.map((method) => method.toLowerCase());
     module2.exports = Route;
-    function Route(path3) {
-      debug("new %o", path3);
-      this.path = path3;
+    function Route(path2) {
+      debug("new %o", path2);
+      this.path = path2;
       this.stack = [];
       this.methods = /* @__PURE__ */ Object.create(null);
     }
@@ -20909,8 +20909,8 @@ var require_router = __commonJS({
         if (++sync > 100) {
           return setImmediate(next, err);
         }
-        const path3 = getPathname(req);
-        if (path3 == null) {
+        const path2 = getPathname(req);
+        if (path2 == null) {
           return done(layerError);
         }
         let layer;
@@ -20918,7 +20918,7 @@ var require_router = __commonJS({
         let route;
         while (match !== true && idx < stack.length) {
           layer = stack[idx++];
-          match = matchLayer(layer, path3);
+          match = matchLayer(layer, path2);
           route = layer.route;
           if (typeof match !== "boolean") {
             layerError = layerError || match;
@@ -20956,18 +20956,18 @@ var require_router = __commonJS({
           } else if (route) {
             layer.handleRequest(req, res, next);
           } else {
-            trimPrefix(layer, layerError, layerPath, path3);
+            trimPrefix(layer, layerError, layerPath, path2);
           }
           sync = 0;
         });
       }
-      function trimPrefix(layer, layerError, layerPath, path3) {
+      function trimPrefix(layer, layerError, layerPath, path2) {
         if (layerPath.length !== 0) {
-          if (layerPath !== path3.substring(0, layerPath.length)) {
+          if (layerPath !== path2.substring(0, layerPath.length)) {
             next(layerError);
             return;
           }
-          const c = path3[layerPath.length];
+          const c = path2[layerPath.length];
           if (c && c !== "/") {
             next(layerError);
             return;
@@ -20991,7 +20991,7 @@ var require_router = __commonJS({
     };
     Router.prototype.use = function use(handler) {
       let offset = 0;
-      let path3 = "/";
+      let path2 = "/";
       if (typeof handler !== "function") {
         let arg = handler;
         while (Array.isArray(arg) && arg.length !== 0) {
@@ -20999,7 +20999,7 @@ var require_router = __commonJS({
         }
         if (typeof arg !== "function") {
           offset = 1;
-          path3 = handler;
+          path2 = handler;
         }
       }
       const callbacks = flatten.call(slice.call(arguments, offset), Infinity);
@@ -21011,8 +21011,8 @@ var require_router = __commonJS({
         if (typeof fn !== "function") {
           throw new TypeError("argument handler must be a function");
         }
-        debug("use %o %s", path3, fn.name || "<anonymous>");
-        const layer = new Layer(path3, {
+        debug("use %o %s", path2, fn.name || "<anonymous>");
+        const layer = new Layer(path2, {
           sensitive: this.caseSensitive,
           strict: false,
           end: false
@@ -21022,9 +21022,9 @@ var require_router = __commonJS({
       }
       return this;
     };
-    Router.prototype.route = function route(path3) {
-      const route2 = new Route(path3);
-      const layer = new Layer(path3, {
+    Router.prototype.route = function route(path2) {
+      const route2 = new Route(path2);
+      const layer = new Layer(path2, {
         sensitive: this.caseSensitive,
         strict: this.strict,
         end: true
@@ -21037,8 +21037,8 @@ var require_router = __commonJS({
       return route2;
     };
     methods.concat("all").forEach(function(method) {
-      Router.prototype[method] = function(path3) {
-        const route = this.route(path3);
+      Router.prototype[method] = function(path2) {
+        const route = this.route(path2);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
       };
@@ -21067,9 +21067,9 @@ var require_router = __commonJS({
       const fqdnIndex = url.substring(0, pathLength).indexOf("://");
       return fqdnIndex !== -1 ? url.substring(0, url.indexOf("/", 3 + fqdnIndex)) : void 0;
     }
-    function matchLayer(layer, path3) {
+    function matchLayer(layer, path2) {
       try {
-        return layer.match(path3);
+        return layer.match(path2);
       } catch (err) {
         return err;
       }
@@ -21297,7 +21297,7 @@ var require_application = __commonJS({
     };
     app2.use = function use(fn) {
       var offset = 0;
-      var path3 = "/";
+      var path2 = "/";
       if (typeof fn !== "function") {
         var arg = fn;
         while (Array.isArray(arg) && arg.length !== 0) {
@@ -21305,7 +21305,7 @@ var require_application = __commonJS({
         }
         if (typeof arg !== "function") {
           offset = 1;
-          path3 = fn;
+          path2 = fn;
         }
       }
       var fns = flatten.call(slice.call(arguments, offset), Infinity);
@@ -21315,12 +21315,12 @@ var require_application = __commonJS({
       var router = this.router;
       fns.forEach(function(fn2) {
         if (!fn2 || !fn2.handle || !fn2.set) {
-          return router.use(path3, fn2);
+          return router.use(path2, fn2);
         }
-        debug(".use app under %s", path3);
-        fn2.mountpath = path3;
+        debug(".use app under %s", path2);
+        fn2.mountpath = path2;
         fn2.parent = this;
-        router.use(path3, function mounted_app(req, res, next) {
+        router.use(path2, function mounted_app(req, res, next) {
           var orig = req.app;
           fn2.handle(req, res, function(err) {
             Object.setPrototypeOf(req, orig.request);
@@ -21332,8 +21332,8 @@ var require_application = __commonJS({
       }, this);
       return this;
     };
-    app2.route = function route(path3) {
-      return this.router.route(path3);
+    app2.route = function route(path2) {
+      return this.router.route(path2);
     };
     app2.engine = function engine(ext, fn) {
       if (typeof fn !== "function") {
@@ -21376,7 +21376,7 @@ var require_application = __commonJS({
       }
       return this;
     };
-    app2.path = function path3() {
+    app2.path = function path2() {
       return this.parent ? this.parent.path() + this.mountpath : "";
     };
     app2.enabled = function enabled(setting) {
@@ -21392,17 +21392,17 @@ var require_application = __commonJS({
       return this.set(setting, false);
     };
     methods.forEach(function(method) {
-      app2[method] = function(path3) {
+      app2[method] = function(path2) {
         if (method === "get" && arguments.length === 1) {
-          return this.set(path3);
+          return this.set(path2);
         }
-        var route = this.route(path3);
+        var route = this.route(path2);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
       };
     });
-    app2.all = function all(path3) {
-      var route = this.route(path3);
+    app2.all = function all(path2) {
+      var route = this.route(path2);
       var args = slice.call(arguments, 1);
       for (var i = 0; i < methods.length; i++) {
         route[methods[i]].apply(route, args);
@@ -22324,7 +22324,7 @@ var require_request = __commonJS({
       var subdomains2 = !isIP(hostname2) ? hostname2.split(".").reverse() : [hostname2];
       return subdomains2.slice(offset);
     });
-    defineGetter(req, "path", function path3() {
+    defineGetter(req, "path", function path2() {
       return parse(this).pathname;
     });
     defineGetter(req, "host", function host() {
@@ -22535,8 +22535,8 @@ var require_content_disposition = __commonJS({
       this.type = type2;
       this.parameters = parameters;
     }
-    function basename(path3) {
-      const normalized = path3.replaceAll("\\", "/");
+    function basename(path2) {
+      const normalized = path2.replaceAll("\\", "/");
       let end = normalized.length;
       while (end > 0 && normalized[end - 1] === "/") {
         end--;
@@ -22782,27 +22782,27 @@ var require_send = __commonJS({
     var ms = require_ms();
     var onFinished = require_on_finished();
     var parseRange = require_range_parser();
-    var path3 = require("path");
+    var path2 = require("path");
     var statuses = require_statuses();
     var Stream = require("stream");
     var util2 = require("util");
-    var extname = path3.extname;
-    var join = path3.join;
-    var normalize = path3.normalize;
-    var resolve = path3.resolve;
-    var sep = path3.sep;
+    var extname = path2.extname;
+    var join = path2.join;
+    var normalize = path2.normalize;
+    var resolve = path2.resolve;
+    var sep = path2.sep;
     var BYTES_RANGE_REGEXP = /^ *bytes=/;
     var MAX_MAXAGE = 60 * 60 * 24 * 365 * 1e3;
     var UP_PATH_REGEXP = /(?:^|[\\/])\.\.(?:[\\/]|$)/;
     module2.exports = send;
-    function send(req, path4, options) {
-      return new SendStream(req, path4, options);
+    function send(req, path3, options) {
+      return new SendStream(req, path3, options);
     }
-    function SendStream(req, path4, options) {
+    function SendStream(req, path3, options) {
       Stream.call(this);
       var opts = options || {};
       this.options = opts;
-      this.path = path4;
+      this.path = path3;
       this.req = req;
       this._acceptRanges = opts.acceptRanges !== void 0 ? Boolean(opts.acceptRanges) : true;
       this._cacheControl = opts.cacheControl !== void 0 ? Boolean(opts.cacheControl) : true;
@@ -22916,10 +22916,10 @@ var require_send = __commonJS({
       var lastModified = this.res.getHeader("Last-Modified");
       return parseHttpDate(lastModified) <= parseHttpDate(ifRange);
     };
-    SendStream.prototype.redirect = function redirect(path4) {
+    SendStream.prototype.redirect = function redirect(path3) {
       var res = this.res;
       if (hasListeners(this, "directory")) {
-        this.emit("directory", res, path4);
+        this.emit("directory", res, path3);
         return;
       }
       if (this.hasTrailingSlash()) {
@@ -22939,38 +22939,38 @@ var require_send = __commonJS({
     SendStream.prototype.pipe = function pipe(res) {
       var root = this._root;
       this.res = res;
-      var path4 = decode(this.path);
-      if (path4 === -1) {
+      var path3 = decode(this.path);
+      if (path3 === -1) {
         this.error(400);
         return res;
       }
-      if (~path4.indexOf("\0")) {
+      if (~path3.indexOf("\0")) {
         this.error(400);
         return res;
       }
       var parts;
       if (root !== null) {
-        if (path4) {
-          path4 = normalize("." + sep + path4);
+        if (path3) {
+          path3 = normalize("." + sep + path3);
         }
-        if (UP_PATH_REGEXP.test(path4)) {
-          debug('malicious path "%s"', path4);
+        if (UP_PATH_REGEXP.test(path3)) {
+          debug('malicious path "%s"', path3);
           this.error(403);
           return res;
         }
-        parts = path4.split(sep);
-        path4 = normalize(join(root, path4));
+        parts = path3.split(sep);
+        path3 = normalize(join(root, path3));
       } else {
-        if (UP_PATH_REGEXP.test(path4)) {
-          debug('malicious path "%s"', path4);
+        if (UP_PATH_REGEXP.test(path3)) {
+          debug('malicious path "%s"', path3);
           this.error(403);
           return res;
         }
-        parts = normalize(path4).split(sep);
-        path4 = resolve(path4);
+        parts = normalize(path3).split(sep);
+        path3 = resolve(path3);
       }
       if (containsDotFile(parts)) {
-        debug('%s dotfile "%s"', this._dotfiles, path4);
+        debug('%s dotfile "%s"', this._dotfiles, path3);
         switch (this._dotfiles) {
           case "allow":
             break;
@@ -22984,13 +22984,13 @@ var require_send = __commonJS({
         }
       }
       if (this._index.length && this.hasTrailingSlash()) {
-        this.sendIndex(path4);
+        this.sendIndex(path3);
         return res;
       }
-      this.sendFile(path4);
+      this.sendFile(path3);
       return res;
     };
-    SendStream.prototype.send = function send2(path4, stat) {
+    SendStream.prototype.send = function send2(path3, stat) {
       var len = stat.size;
       var options = this.options;
       var opts = {};
@@ -23002,9 +23002,9 @@ var require_send = __commonJS({
         this.headersAlreadySent();
         return;
       }
-      debug('pipe "%s"', path4);
-      this.setHeader(path4, stat);
-      this.type(path4);
+      debug('pipe "%s"', path3);
+      this.setHeader(path3, stat);
+      this.type(path3);
       if (this.isConditionalGET()) {
         if (this.isPreconditionFailure()) {
           this.error(412);
@@ -23053,28 +23053,28 @@ var require_send = __commonJS({
         res.end();
         return;
       }
-      this.stream(path4, opts);
+      this.stream(path3, opts);
     };
-    SendStream.prototype.sendFile = function sendFile(path4) {
+    SendStream.prototype.sendFile = function sendFile(path3) {
       var i = 0;
       var self = this;
-      debug('stat "%s"', path4);
-      fs2.stat(path4, function onstat(err, stat) {
-        var pathEndsWithSep = path4[path4.length - 1] === sep;
-        if (err && err.code === "ENOENT" && !extname(path4) && !pathEndsWithSep) {
+      debug('stat "%s"', path3);
+      fs2.stat(path3, function onstat(err, stat) {
+        var pathEndsWithSep = path3[path3.length - 1] === sep;
+        if (err && err.code === "ENOENT" && !extname(path3) && !pathEndsWithSep) {
           return next(err);
         }
         if (err) return self.onStatError(err);
-        if (stat.isDirectory()) return self.redirect(path4);
+        if (stat.isDirectory()) return self.redirect(path3);
         if (pathEndsWithSep) return self.error(404);
-        self.emit("file", path4, stat);
-        self.send(path4, stat);
+        self.emit("file", path3, stat);
+        self.send(path3, stat);
       });
       function next(err) {
         if (self._extensions.length <= i) {
           return err ? self.onStatError(err) : self.error(404);
         }
-        var p = path4 + "." + self._extensions[i++];
+        var p = path3 + "." + self._extensions[i++];
         debug('stat "%s"', p);
         fs2.stat(p, function(err2, stat) {
           if (err2) return next(err2);
@@ -23084,7 +23084,7 @@ var require_send = __commonJS({
         });
       }
     };
-    SendStream.prototype.sendIndex = function sendIndex(path4) {
+    SendStream.prototype.sendIndex = function sendIndex(path3) {
       var i = -1;
       var self = this;
       function next(err) {
@@ -23092,7 +23092,7 @@ var require_send = __commonJS({
           if (err) return self.onStatError(err);
           return self.error(404);
         }
-        var p = join(path4, self._index[i]);
+        var p = join(path3, self._index[i]);
         debug('stat "%s"', p);
         fs2.stat(p, function(err2, stat) {
           if (err2) return next(err2);
@@ -23103,10 +23103,10 @@ var require_send = __commonJS({
       }
       next();
     };
-    SendStream.prototype.stream = function stream(path4, options) {
+    SendStream.prototype.stream = function stream(path3, options) {
       var self = this;
       var res = this.res;
-      var stream2 = fs2.createReadStream(path4, options);
+      var stream2 = fs2.createReadStream(path3, options);
       this.emit("stream", stream2);
       stream2.pipe(res);
       function cleanup() {
@@ -23121,17 +23121,17 @@ var require_send = __commonJS({
         self.emit("end");
       });
     };
-    SendStream.prototype.type = function type2(path4) {
+    SendStream.prototype.type = function type2(path3) {
       var res = this.res;
       if (res.getHeader("Content-Type")) return;
-      var ext = extname(path4);
+      var ext = extname(path3);
       var type3 = mime.contentType(ext) || "application/octet-stream";
       debug("content-type %s", type3);
       res.setHeader("Content-Type", type3);
     };
-    SendStream.prototype.setHeader = function setHeader(path4, stat) {
+    SendStream.prototype.setHeader = function setHeader(path3, stat) {
       var res = this.res;
-      this.emit("headers", res, path4, stat);
+      this.emit("headers", res, path3, stat);
       if (this._acceptRanges && !res.getHeader("Accept-Ranges")) {
         debug("accept ranges");
         res.setHeader("Accept-Ranges", "bytes");
@@ -23189,9 +23189,9 @@ var require_send = __commonJS({
       }
       return err instanceof Error ? createError(status, err, { expose: false }) : createError(status, err);
     }
-    function decode(path4) {
+    function decode(path3) {
       try {
-        return decodeURIComponent(path4);
+        return decodeURIComponent(path3);
       } catch (err) {
         return -1;
       }
@@ -23335,7 +23335,7 @@ var require_response = __commonJS({
     var http2 = require("node:http");
     var onFinished = require_on_finished();
     var mime = require_mime_types();
-    var path3 = require("node:path");
+    var path2 = require("node:path");
     var pathIsAbsolute = require("node:path").isAbsolute;
     var statuses = require_statuses();
     var sign = require_cookie_signature().sign;
@@ -23344,8 +23344,8 @@ var require_response = __commonJS({
     var setCharset = require_utils3().setCharset;
     var cookie = require_cookie();
     var send = require_send();
-    var extname = path3.extname;
-    var resolve = path3.resolve;
+    var extname = path2.extname;
+    var resolve = path2.resolve;
     var vary = require_vary();
     var { Buffer: Buffer2 } = require("node:buffer");
     var res = Object.create(http2.ServerResponse.prototype);
@@ -23491,26 +23491,26 @@ var require_response = __commonJS({
       this.type("txt");
       return this.send(body);
     };
-    res.sendFile = function sendFile(path4, options, callback) {
+    res.sendFile = function sendFile(path3, options, callback) {
       var done = callback;
       var req = this.req;
       var res2 = this;
       var next = req.next;
       var opts = options || {};
-      if (!path4) {
+      if (!path3) {
         throw new TypeError("path argument is required to res.sendFile");
       }
-      if (typeof path4 !== "string") {
+      if (typeof path3 !== "string") {
         throw new TypeError("path must be a string to res.sendFile");
       }
       if (typeof options === "function") {
         done = options;
         opts = {};
       }
-      if (!opts.root && !pathIsAbsolute(path4)) {
+      if (!opts.root && !pathIsAbsolute(path3)) {
         throw new TypeError("path must be absolute or specify root to res.sendFile");
       }
-      var pathname = encodeURI(path4);
+      var pathname = encodeURI(path3);
       opts.etag = this.app.enabled("etag");
       var file = send(req, pathname, opts);
       sendfile(res2, file, opts, function(err) {
@@ -23521,7 +23521,7 @@ var require_response = __commonJS({
         }
       });
     };
-    res.download = function download(path4, filename, options, callback) {
+    res.download = function download(path3, filename, options, callback) {
       var done = callback;
       var name = filename;
       var opts = options || null;
@@ -23538,7 +23538,7 @@ var require_response = __commonJS({
         opts = filename;
       }
       var headers = {
-        "Content-Disposition": contentDisposition(name || path4)
+        "Content-Disposition": contentDisposition(name || path3)
       };
       if (opts && opts.headers) {
         var keys = Object.keys(opts.headers);
@@ -23551,7 +23551,7 @@ var require_response = __commonJS({
       }
       opts = Object.create(opts);
       opts.headers = headers;
-      var fullPath = !opts.root ? resolve(path4) : path4;
+      var fullPath = !opts.root ? resolve(path3) : path3;
       return this.sendFile(fullPath, opts, done);
     };
     res.contentType = res.type = function contentType(type2) {
@@ -23834,11 +23834,11 @@ var require_serve_static = __commonJS({
         }
         var forwardError = !fallthrough;
         var originalUrl = parseUrl.original(req);
-        var path3 = parseUrl(req).pathname;
-        if (path3 === "/" && originalUrl.pathname.substr(-1) !== "/") {
-          path3 = "";
+        var path2 = parseUrl(req).pathname;
+        if (path2 === "/" && originalUrl.pathname.substr(-1) !== "/") {
+          path2 = "";
         }
-        var stream = send(req, path3, opts);
+        var stream = send(req, path2, opts);
         stream.on("directory", onDirectory);
         if (setHeaders) {
           stream.on("headers", setHeaders);
@@ -23945,778 +23945,6 @@ var require_express2 = __commonJS({
   }
 });
 
-// node_modules/better-sqlite3/lib/util.js
-var require_util = __commonJS({
-  "node_modules/better-sqlite3/lib/util.js"(exports2) {
-    "use strict";
-    exports2.getBooleanOption = (options, key) => {
-      let value = false;
-      if (key in options && typeof (value = options[key]) !== "boolean") {
-        throw new TypeError(`Expected the "${key}" option to be a boolean`);
-      }
-      return value;
-    };
-    exports2.cppdb = Symbol();
-    exports2.inspect = Symbol.for("nodejs.util.inspect.custom");
-  }
-});
-
-// node_modules/better-sqlite3/lib/sqlite-error.js
-var require_sqlite_error = __commonJS({
-  "node_modules/better-sqlite3/lib/sqlite-error.js"(exports2, module2) {
-    "use strict";
-    var descriptor = { value: "SqliteError", writable: true, enumerable: false, configurable: true };
-    function SqliteError(message, code) {
-      if (new.target !== SqliteError) {
-        return new SqliteError(message, code);
-      }
-      if (typeof code !== "string") {
-        throw new TypeError("Expected second argument to be a string");
-      }
-      Error.call(this, message);
-      descriptor.value = "" + message;
-      Object.defineProperty(this, "message", descriptor);
-      Error.captureStackTrace(this, SqliteError);
-      this.code = code;
-    }
-    Object.setPrototypeOf(SqliteError, Error);
-    Object.setPrototypeOf(SqliteError.prototype, Error.prototype);
-    Object.defineProperty(SqliteError.prototype, "name", descriptor);
-    module2.exports = SqliteError;
-  }
-});
-
-// node_modules/file-uri-to-path/index.js
-var require_file_uri_to_path = __commonJS({
-  "node_modules/file-uri-to-path/index.js"(exports2, module2) {
-    var sep = require("path").sep || "/";
-    module2.exports = fileUriToPath;
-    function fileUriToPath(uri) {
-      if ("string" != typeof uri || uri.length <= 7 || "file://" != uri.substring(0, 7)) {
-        throw new TypeError("must pass in a file:// URI to convert to a file path");
-      }
-      var rest = decodeURI(uri.substring(7));
-      var firstSlash = rest.indexOf("/");
-      var host = rest.substring(0, firstSlash);
-      var path3 = rest.substring(firstSlash + 1);
-      if ("localhost" == host) host = "";
-      if (host) {
-        host = sep + sep + host;
-      }
-      path3 = path3.replace(/^(.+)\|/, "$1:");
-      if (sep == "\\") {
-        path3 = path3.replace(/\//g, "\\");
-      }
-      if (/^.+\:/.test(path3)) {
-      } else {
-        path3 = sep + path3;
-      }
-      return host + path3;
-    }
-  }
-});
-
-// node_modules/bindings/bindings.js
-var require_bindings = __commonJS({
-  "node_modules/bindings/bindings.js"(exports2, module2) {
-    var fs2 = require("fs");
-    var path3 = require("path");
-    var fileURLToPath = require_file_uri_to_path();
-    var join = path3.join;
-    var dirname = path3.dirname;
-    var exists2 = fs2.accessSync && function(path4) {
-      try {
-        fs2.accessSync(path4);
-      } catch (e) {
-        return false;
-      }
-      return true;
-    } || fs2.existsSync || path3.existsSync;
-    var defaults = {
-      arrow: process.env.NODE_BINDINGS_ARROW || " \u2192 ",
-      compiled: process.env.NODE_BINDINGS_COMPILED_DIR || "compiled",
-      platform: process.platform,
-      arch: process.arch,
-      nodePreGyp: "node-v" + process.versions.modules + "-" + process.platform + "-" + process.arch,
-      version: process.versions.node,
-      bindings: "bindings.node",
-      try: [
-        // node-gyp's linked version in the "build" dir
-        ["module_root", "build", "bindings"],
-        // node-waf and gyp_addon (a.k.a node-gyp)
-        ["module_root", "build", "Debug", "bindings"],
-        ["module_root", "build", "Release", "bindings"],
-        // Debug files, for development (legacy behavior, remove for node v0.9)
-        ["module_root", "out", "Debug", "bindings"],
-        ["module_root", "Debug", "bindings"],
-        // Release files, but manually compiled (legacy behavior, remove for node v0.9)
-        ["module_root", "out", "Release", "bindings"],
-        ["module_root", "Release", "bindings"],
-        // Legacy from node-waf, node <= 0.4.x
-        ["module_root", "build", "default", "bindings"],
-        // Production "Release" buildtype binary (meh...)
-        ["module_root", "compiled", "version", "platform", "arch", "bindings"],
-        // node-qbs builds
-        ["module_root", "addon-build", "release", "install-root", "bindings"],
-        ["module_root", "addon-build", "debug", "install-root", "bindings"],
-        ["module_root", "addon-build", "default", "install-root", "bindings"],
-        // node-pre-gyp path ./lib/binding/{node_abi}-{platform}-{arch}
-        ["module_root", "lib", "binding", "nodePreGyp", "bindings"]
-      ]
-    };
-    function bindings(opts) {
-      if (typeof opts == "string") {
-        opts = { bindings: opts };
-      } else if (!opts) {
-        opts = {};
-      }
-      Object.keys(defaults).map(function(i2) {
-        if (!(i2 in opts)) opts[i2] = defaults[i2];
-      });
-      if (!opts.module_root) {
-        opts.module_root = exports2.getRoot(exports2.getFileName());
-      }
-      if (path3.extname(opts.bindings) != ".node") {
-        opts.bindings += ".node";
-      }
-      var requireFunc = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
-      var tries = [], i = 0, l = opts.try.length, n, b, err;
-      for (; i < l; i++) {
-        n = join.apply(
-          null,
-          opts.try[i].map(function(p) {
-            return opts[p] || p;
-          })
-        );
-        tries.push(n);
-        try {
-          b = opts.path ? requireFunc.resolve(n) : requireFunc(n);
-          if (!opts.path) {
-            b.path = n;
-          }
-          return b;
-        } catch (e) {
-          if (e.code !== "MODULE_NOT_FOUND" && e.code !== "QUALIFIED_PATH_RESOLUTION_FAILED" && !/not find/i.test(e.message)) {
-            throw e;
-          }
-        }
-      }
-      err = new Error(
-        "Could not locate the bindings file. Tried:\n" + tries.map(function(a) {
-          return opts.arrow + a;
-        }).join("\n")
-      );
-      err.tries = tries;
-      throw err;
-    }
-    module2.exports = exports2 = bindings;
-    exports2.getFileName = function getFileName(calling_file) {
-      var origPST = Error.prepareStackTrace, origSTL = Error.stackTraceLimit, dummy = {}, fileName;
-      Error.stackTraceLimit = 10;
-      Error.prepareStackTrace = function(e, st) {
-        for (var i = 0, l = st.length; i < l; i++) {
-          fileName = st[i].getFileName();
-          if (fileName !== __filename) {
-            if (calling_file) {
-              if (fileName !== calling_file) {
-                return;
-              }
-            } else {
-              return;
-            }
-          }
-        }
-      };
-      Error.captureStackTrace(dummy);
-      dummy.stack;
-      Error.prepareStackTrace = origPST;
-      Error.stackTraceLimit = origSTL;
-      var fileSchema = "file://";
-      if (fileName.indexOf(fileSchema) === 0) {
-        fileName = fileURLToPath(fileName);
-      }
-      return fileName;
-    };
-    exports2.getRoot = function getRoot(file) {
-      var dir = dirname(file), prev;
-      while (true) {
-        if (dir === ".") {
-          dir = process.cwd();
-        }
-        if (exists2(join(dir, "package.json")) || exists2(join(dir, "node_modules"))) {
-          return dir;
-        }
-        if (prev === dir) {
-          throw new Error(
-            'Could not find module root given file: "' + file + '". Do you have a `package.json` file? '
-          );
-        }
-        prev = dir;
-        dir = join(dir, "..");
-      }
-    };
-  }
-});
-
-// node_modules/better-sqlite3/lib/methods/wrappers.js
-var require_wrappers = __commonJS({
-  "node_modules/better-sqlite3/lib/methods/wrappers.js"(exports2) {
-    "use strict";
-    var { cppdb } = require_util();
-    exports2.prepare = function prepare(sql3) {
-      return this[cppdb].prepare(sql3, this, false);
-    };
-    exports2.exec = function exec(sql3) {
-      this[cppdb].exec(sql3);
-      return this;
-    };
-    exports2.close = function close() {
-      this[cppdb].close();
-      return this;
-    };
-    exports2.loadExtension = function loadExtension(...args) {
-      this[cppdb].loadExtension(...args);
-      return this;
-    };
-    exports2.defaultSafeIntegers = function defaultSafeIntegers(...args) {
-      this[cppdb].defaultSafeIntegers(...args);
-      return this;
-    };
-    exports2.unsafeMode = function unsafeMode(...args) {
-      this[cppdb].unsafeMode(...args);
-      return this;
-    };
-    exports2.getters = {
-      name: {
-        get: function name() {
-          return this[cppdb].name;
-        },
-        enumerable: true
-      },
-      open: {
-        get: function open() {
-          return this[cppdb].open;
-        },
-        enumerable: true
-      },
-      inTransaction: {
-        get: function inTransaction() {
-          return this[cppdb].inTransaction;
-        },
-        enumerable: true
-      },
-      readonly: {
-        get: function readonly() {
-          return this[cppdb].readonly;
-        },
-        enumerable: true
-      },
-      memory: {
-        get: function memory() {
-          return this[cppdb].memory;
-        },
-        enumerable: true
-      }
-    };
-  }
-});
-
-// node_modules/better-sqlite3/lib/methods/transaction.js
-var require_transaction = __commonJS({
-  "node_modules/better-sqlite3/lib/methods/transaction.js"(exports2, module2) {
-    "use strict";
-    var { cppdb } = require_util();
-    var controllers = /* @__PURE__ */ new WeakMap();
-    module2.exports = function transaction(fn) {
-      if (typeof fn !== "function") throw new TypeError("Expected first argument to be a function");
-      const db2 = this[cppdb];
-      const controller = getController(db2, this);
-      const { apply } = Function.prototype;
-      const properties = {
-        default: { value: wrapTransaction(apply, fn, db2, controller.default) },
-        deferred: { value: wrapTransaction(apply, fn, db2, controller.deferred) },
-        immediate: { value: wrapTransaction(apply, fn, db2, controller.immediate) },
-        exclusive: { value: wrapTransaction(apply, fn, db2, controller.exclusive) },
-        database: { value: this, enumerable: true }
-      };
-      Object.defineProperties(properties.default.value, properties);
-      Object.defineProperties(properties.deferred.value, properties);
-      Object.defineProperties(properties.immediate.value, properties);
-      Object.defineProperties(properties.exclusive.value, properties);
-      return properties.default.value;
-    };
-    var getController = (db2, self) => {
-      let controller = controllers.get(db2);
-      if (!controller) {
-        const shared = {
-          commit: db2.prepare("COMMIT", self, false),
-          rollback: db2.prepare("ROLLBACK", self, false),
-          savepoint: db2.prepare("SAVEPOINT `	_bs3.	`", self, false),
-          release: db2.prepare("RELEASE `	_bs3.	`", self, false),
-          rollbackTo: db2.prepare("ROLLBACK TO `	_bs3.	`", self, false)
-        };
-        controllers.set(db2, controller = {
-          default: Object.assign({ begin: db2.prepare("BEGIN", self, false) }, shared),
-          deferred: Object.assign({ begin: db2.prepare("BEGIN DEFERRED", self, false) }, shared),
-          immediate: Object.assign({ begin: db2.prepare("BEGIN IMMEDIATE", self, false) }, shared),
-          exclusive: Object.assign({ begin: db2.prepare("BEGIN EXCLUSIVE", self, false) }, shared)
-        });
-      }
-      return controller;
-    };
-    var wrapTransaction = (apply, fn, db2, { begin, commit, rollback, savepoint, release: release2, rollbackTo }) => function sqliteTransaction() {
-      let before, after, undo;
-      if (db2.inTransaction) {
-        before = savepoint;
-        after = release2;
-        undo = rollbackTo;
-      } else {
-        before = begin;
-        after = commit;
-        undo = rollback;
-      }
-      before.run();
-      try {
-        const result = apply.call(fn, this, arguments);
-        if (result && typeof result.then === "function") {
-          throw new TypeError("Transaction function cannot return a promise");
-        }
-        after.run();
-        return result;
-      } catch (ex) {
-        if (db2.inTransaction) {
-          undo.run();
-          if (undo !== rollback) after.run();
-        }
-        throw ex;
-      }
-    };
-  }
-});
-
-// node_modules/better-sqlite3/lib/methods/pragma.js
-var require_pragma = __commonJS({
-  "node_modules/better-sqlite3/lib/methods/pragma.js"(exports2, module2) {
-    "use strict";
-    var { getBooleanOption, cppdb } = require_util();
-    module2.exports = function pragma(source, options) {
-      if (options == null) options = {};
-      if (typeof source !== "string") throw new TypeError("Expected first argument to be a string");
-      if (typeof options !== "object") throw new TypeError("Expected second argument to be an options object");
-      const simple = getBooleanOption(options, "simple");
-      const stmt = this[cppdb].prepare(`PRAGMA ${source}`, this, true);
-      return simple ? stmt.pluck().get() : stmt.all();
-    };
-  }
-});
-
-// node_modules/better-sqlite3/lib/methods/backup.js
-var require_backup = __commonJS({
-  "node_modules/better-sqlite3/lib/methods/backup.js"(exports2, module2) {
-    "use strict";
-    var fs2 = require("fs");
-    var path3 = require("path");
-    var { promisify } = require("util");
-    var { cppdb } = require_util();
-    var fsAccess = promisify(fs2.access);
-    module2.exports = async function backup(filename, options) {
-      if (options == null) options = {};
-      if (typeof filename !== "string") throw new TypeError("Expected first argument to be a string");
-      if (typeof options !== "object") throw new TypeError("Expected second argument to be an options object");
-      filename = filename.trim();
-      const attachedName = "attached" in options ? options.attached : "main";
-      const handler = "progress" in options ? options.progress : null;
-      if (!filename) throw new TypeError("Backup filename cannot be an empty string");
-      if (filename === ":memory:") throw new TypeError('Invalid backup filename ":memory:"');
-      if (typeof attachedName !== "string") throw new TypeError('Expected the "attached" option to be a string');
-      if (!attachedName) throw new TypeError('The "attached" option cannot be an empty string');
-      if (handler != null && typeof handler !== "function") throw new TypeError('Expected the "progress" option to be a function');
-      await fsAccess(path3.dirname(filename)).catch(() => {
-        throw new TypeError("Cannot save backup because the directory does not exist");
-      });
-      const isNewFile = await fsAccess(filename).then(() => false, () => true);
-      return runBackup(this[cppdb].backup(this, attachedName, filename, isNewFile), handler || null);
-    };
-    var runBackup = (backup, handler) => {
-      let rate = 0;
-      let useDefault = true;
-      return new Promise((resolve, reject) => {
-        setImmediate(function step() {
-          try {
-            const progress = backup.transfer(rate);
-            if (!progress.remainingPages) {
-              backup.close();
-              resolve(progress);
-              return;
-            }
-            if (useDefault) {
-              useDefault = false;
-              rate = 100;
-            }
-            if (handler) {
-              const ret = handler(progress);
-              if (ret !== void 0) {
-                if (typeof ret === "number" && ret === ret) rate = Math.max(0, Math.min(2147483647, Math.round(ret)));
-                else throw new TypeError("Expected progress callback to return a number or undefined");
-              }
-            }
-            setImmediate(step);
-          } catch (err) {
-            backup.close();
-            reject(err);
-          }
-        });
-      });
-    };
-  }
-});
-
-// node_modules/better-sqlite3/lib/methods/serialize.js
-var require_serialize = __commonJS({
-  "node_modules/better-sqlite3/lib/methods/serialize.js"(exports2, module2) {
-    "use strict";
-    var { cppdb } = require_util();
-    module2.exports = function serialize(options) {
-      if (options == null) options = {};
-      if (typeof options !== "object") throw new TypeError("Expected first argument to be an options object");
-      const attachedName = "attached" in options ? options.attached : "main";
-      if (typeof attachedName !== "string") throw new TypeError('Expected the "attached" option to be a string');
-      if (!attachedName) throw new TypeError('The "attached" option cannot be an empty string');
-      return this[cppdb].serialize(attachedName);
-    };
-  }
-});
-
-// node_modules/better-sqlite3/lib/methods/function.js
-var require_function = __commonJS({
-  "node_modules/better-sqlite3/lib/methods/function.js"(exports2, module2) {
-    "use strict";
-    var { getBooleanOption, cppdb } = require_util();
-    module2.exports = function defineFunction(name, options, fn) {
-      if (options == null) options = {};
-      if (typeof options === "function") {
-        fn = options;
-        options = {};
-      }
-      if (typeof name !== "string") throw new TypeError("Expected first argument to be a string");
-      if (typeof fn !== "function") throw new TypeError("Expected last argument to be a function");
-      if (typeof options !== "object") throw new TypeError("Expected second argument to be an options object");
-      if (!name) throw new TypeError("User-defined function name cannot be an empty string");
-      const safeIntegers = "safeIntegers" in options ? +getBooleanOption(options, "safeIntegers") : 2;
-      const deterministic = getBooleanOption(options, "deterministic");
-      const directOnly = getBooleanOption(options, "directOnly");
-      const varargs = getBooleanOption(options, "varargs");
-      let argCount = -1;
-      if (!varargs) {
-        argCount = fn.length;
-        if (!Number.isInteger(argCount) || argCount < 0) throw new TypeError("Expected function.length to be a positive integer");
-        if (argCount > 100) throw new RangeError("User-defined functions cannot have more than 100 arguments");
-      }
-      this[cppdb].function(fn, name, argCount, safeIntegers, deterministic, directOnly);
-      return this;
-    };
-  }
-});
-
-// node_modules/better-sqlite3/lib/methods/aggregate.js
-var require_aggregate = __commonJS({
-  "node_modules/better-sqlite3/lib/methods/aggregate.js"(exports2, module2) {
-    "use strict";
-    var { getBooleanOption, cppdb } = require_util();
-    module2.exports = function defineAggregate(name, options) {
-      if (typeof name !== "string") throw new TypeError("Expected first argument to be a string");
-      if (typeof options !== "object" || options === null) throw new TypeError("Expected second argument to be an options object");
-      if (!name) throw new TypeError("User-defined function name cannot be an empty string");
-      const start = "start" in options ? options.start : null;
-      const step = getFunctionOption(options, "step", true);
-      const inverse = getFunctionOption(options, "inverse", false);
-      const result = getFunctionOption(options, "result", false);
-      const safeIntegers = "safeIntegers" in options ? +getBooleanOption(options, "safeIntegers") : 2;
-      const deterministic = getBooleanOption(options, "deterministic");
-      const directOnly = getBooleanOption(options, "directOnly");
-      const varargs = getBooleanOption(options, "varargs");
-      let argCount = -1;
-      if (!varargs) {
-        argCount = Math.max(getLength(step), inverse ? getLength(inverse) : 0);
-        if (argCount > 0) argCount -= 1;
-        if (argCount > 100) throw new RangeError("User-defined functions cannot have more than 100 arguments");
-      }
-      this[cppdb].aggregate(start, step, inverse, result, name, argCount, safeIntegers, deterministic, directOnly);
-      return this;
-    };
-    var getFunctionOption = (options, key, required) => {
-      const value = key in options ? options[key] : null;
-      if (typeof value === "function") return value;
-      if (value != null) throw new TypeError(`Expected the "${key}" option to be a function`);
-      if (required) throw new TypeError(`Missing required option "${key}"`);
-      return null;
-    };
-    var getLength = ({ length }) => {
-      if (Number.isInteger(length) && length >= 0) return length;
-      throw new TypeError("Expected function.length to be a positive integer");
-    };
-  }
-});
-
-// node_modules/better-sqlite3/lib/methods/table.js
-var require_table = __commonJS({
-  "node_modules/better-sqlite3/lib/methods/table.js"(exports2, module2) {
-    "use strict";
-    var { cppdb } = require_util();
-    module2.exports = function defineTable(name, factory) {
-      if (typeof name !== "string") throw new TypeError("Expected first argument to be a string");
-      if (!name) throw new TypeError("Virtual table module name cannot be an empty string");
-      let eponymous = false;
-      if (typeof factory === "object" && factory !== null) {
-        eponymous = true;
-        factory = defer(parseTableDefinition(factory, "used", name));
-      } else {
-        if (typeof factory !== "function") throw new TypeError("Expected second argument to be a function or a table definition object");
-        factory = wrapFactory(factory);
-      }
-      this[cppdb].table(factory, name, eponymous);
-      return this;
-    };
-    function wrapFactory(factory) {
-      return function virtualTableFactory(moduleName, databaseName, tableName, ...args) {
-        const thisObject = {
-          module: moduleName,
-          database: databaseName,
-          table: tableName
-        };
-        const def = apply.call(factory, thisObject, args);
-        if (typeof def !== "object" || def === null) {
-          throw new TypeError(`Virtual table module "${moduleName}" did not return a table definition object`);
-        }
-        return parseTableDefinition(def, "returned", moduleName);
-      };
-    }
-    function parseTableDefinition(def, verb, moduleName) {
-      if (!hasOwnProperty.call(def, "rows")) {
-        throw new TypeError(`Virtual table module "${moduleName}" ${verb} a table definition without a "rows" property`);
-      }
-      if (!hasOwnProperty.call(def, "columns")) {
-        throw new TypeError(`Virtual table module "${moduleName}" ${verb} a table definition without a "columns" property`);
-      }
-      const rows = def.rows;
-      if (typeof rows !== "function" || Object.getPrototypeOf(rows) !== GeneratorFunctionPrototype) {
-        throw new TypeError(`Virtual table module "${moduleName}" ${verb} a table definition with an invalid "rows" property (should be a generator function)`);
-      }
-      let columns = def.columns;
-      if (!Array.isArray(columns) || !(columns = [...columns]).every((x) => typeof x === "string")) {
-        throw new TypeError(`Virtual table module "${moduleName}" ${verb} a table definition with an invalid "columns" property (should be an array of strings)`);
-      }
-      if (columns.length !== new Set(columns).size) {
-        throw new TypeError(`Virtual table module "${moduleName}" ${verb} a table definition with duplicate column names`);
-      }
-      if (!columns.length) {
-        throw new RangeError(`Virtual table module "${moduleName}" ${verb} a table definition with zero columns`);
-      }
-      let parameters;
-      if (hasOwnProperty.call(def, "parameters")) {
-        parameters = def.parameters;
-        if (!Array.isArray(parameters) || !(parameters = [...parameters]).every((x) => typeof x === "string")) {
-          throw new TypeError(`Virtual table module "${moduleName}" ${verb} a table definition with an invalid "parameters" property (should be an array of strings)`);
-        }
-      } else {
-        parameters = inferParameters(rows);
-      }
-      if (parameters.length !== new Set(parameters).size) {
-        throw new TypeError(`Virtual table module "${moduleName}" ${verb} a table definition with duplicate parameter names`);
-      }
-      if (parameters.length > 32) {
-        throw new RangeError(`Virtual table module "${moduleName}" ${verb} a table definition with more than the maximum number of 32 parameters`);
-      }
-      for (const parameter of parameters) {
-        if (columns.includes(parameter)) {
-          throw new TypeError(`Virtual table module "${moduleName}" ${verb} a table definition with column "${parameter}" which was ambiguously defined as both a column and parameter`);
-        }
-      }
-      let safeIntegers = 2;
-      if (hasOwnProperty.call(def, "safeIntegers")) {
-        const bool = def.safeIntegers;
-        if (typeof bool !== "boolean") {
-          throw new TypeError(`Virtual table module "${moduleName}" ${verb} a table definition with an invalid "safeIntegers" property (should be a boolean)`);
-        }
-        safeIntegers = +bool;
-      }
-      let directOnly = false;
-      if (hasOwnProperty.call(def, "directOnly")) {
-        directOnly = def.directOnly;
-        if (typeof directOnly !== "boolean") {
-          throw new TypeError(`Virtual table module "${moduleName}" ${verb} a table definition with an invalid "directOnly" property (should be a boolean)`);
-        }
-      }
-      const columnDefinitions = [
-        ...parameters.map(identifier).map((str) => `${str} HIDDEN`),
-        ...columns.map(identifier)
-      ];
-      return [
-        `CREATE TABLE x(${columnDefinitions.join(", ")});`,
-        wrapGenerator(rows, new Map(columns.map((x, i) => [x, parameters.length + i])), moduleName),
-        parameters,
-        safeIntegers,
-        directOnly
-      ];
-    }
-    function wrapGenerator(generator, columnMap, moduleName) {
-      return function* virtualTable(...args) {
-        const output = args.map((x) => Buffer.isBuffer(x) ? Buffer.from(x) : x);
-        for (let i = 0; i < columnMap.size; ++i) {
-          output.push(null);
-        }
-        for (const row of generator(...args)) {
-          if (Array.isArray(row)) {
-            extractRowArray(row, output, columnMap.size, moduleName);
-            yield output;
-          } else if (typeof row === "object" && row !== null) {
-            extractRowObject(row, output, columnMap, moduleName);
-            yield output;
-          } else {
-            throw new TypeError(`Virtual table module "${moduleName}" yielded something that isn't a valid row object`);
-          }
-        }
-      };
-    }
-    function extractRowArray(row, output, columnCount, moduleName) {
-      if (row.length !== columnCount) {
-        throw new TypeError(`Virtual table module "${moduleName}" yielded a row with an incorrect number of columns`);
-      }
-      const offset = output.length - columnCount;
-      for (let i = 0; i < columnCount; ++i) {
-        output[i + offset] = row[i];
-      }
-    }
-    function extractRowObject(row, output, columnMap, moduleName) {
-      let count = 0;
-      for (const key of Object.keys(row)) {
-        const index = columnMap.get(key);
-        if (index === void 0) {
-          throw new TypeError(`Virtual table module "${moduleName}" yielded a row with an undeclared column "${key}"`);
-        }
-        output[index] = row[key];
-        count += 1;
-      }
-      if (count !== columnMap.size) {
-        throw new TypeError(`Virtual table module "${moduleName}" yielded a row with missing columns`);
-      }
-    }
-    function inferParameters({ length }) {
-      if (!Number.isInteger(length) || length < 0) {
-        throw new TypeError("Expected function.length to be a positive integer");
-      }
-      const params = [];
-      for (let i = 0; i < length; ++i) {
-        params.push(`$${i + 1}`);
-      }
-      return params;
-    }
-    var { hasOwnProperty } = Object.prototype;
-    var { apply } = Function.prototype;
-    var GeneratorFunctionPrototype = Object.getPrototypeOf(function* () {
-    });
-    var identifier = (str) => `"${str.replace(/"/g, '""')}"`;
-    var defer = (x) => () => x;
-  }
-});
-
-// node_modules/better-sqlite3/lib/methods/inspect.js
-var require_inspect = __commonJS({
-  "node_modules/better-sqlite3/lib/methods/inspect.js"(exports2, module2) {
-    "use strict";
-    var DatabaseInspection = function Database2() {
-    };
-    module2.exports = function inspect(depth, opts) {
-      return Object.assign(new DatabaseInspection(), this);
-    };
-  }
-});
-
-// node_modules/better-sqlite3/lib/database.js
-var require_database = __commonJS({
-  "node_modules/better-sqlite3/lib/database.js"(exports2, module2) {
-    "use strict";
-    var fs2 = require("fs");
-    var path3 = require("path");
-    var util2 = require_util();
-    var SqliteError = require_sqlite_error();
-    var DEFAULT_ADDON;
-    function Database2(filenameGiven, options) {
-      if (new.target == null) {
-        return new Database2(filenameGiven, options);
-      }
-      let buffer;
-      if (Buffer.isBuffer(filenameGiven)) {
-        buffer = filenameGiven;
-        filenameGiven = ":memory:";
-      }
-      if (filenameGiven == null) filenameGiven = "";
-      if (options == null) options = {};
-      if (typeof filenameGiven !== "string") throw new TypeError("Expected first argument to be a string");
-      if (typeof options !== "object") throw new TypeError("Expected second argument to be an options object");
-      if ("readOnly" in options) throw new TypeError('Misspelled option "readOnly" should be "readonly"');
-      if ("memory" in options) throw new TypeError('Option "memory" was removed in v7.0.0 (use ":memory:" filename instead)');
-      const filename = filenameGiven.trim();
-      const anonymous = filename === "" || filename === ":memory:";
-      const readonly = util2.getBooleanOption(options, "readonly");
-      const fileMustExist = util2.getBooleanOption(options, "fileMustExist");
-      const timeout = "timeout" in options ? options.timeout : 5e3;
-      const verbose = "verbose" in options ? options.verbose : null;
-      const nativeBinding = "nativeBinding" in options ? options.nativeBinding : null;
-      if (readonly && anonymous && !buffer) throw new TypeError("In-memory/temporary databases cannot be readonly");
-      if (!Number.isInteger(timeout) || timeout < 0) throw new TypeError('Expected the "timeout" option to be a positive integer');
-      if (timeout > 2147483647) throw new RangeError('Option "timeout" cannot be greater than 2147483647');
-      if (verbose != null && typeof verbose !== "function") throw new TypeError('Expected the "verbose" option to be a function');
-      if (nativeBinding != null && typeof nativeBinding !== "string" && typeof nativeBinding !== "object") throw new TypeError('Expected the "nativeBinding" option to be a string or addon object');
-      let addon;
-      if (nativeBinding == null) {
-        addon = DEFAULT_ADDON || (DEFAULT_ADDON = require_bindings()("better_sqlite3.node"));
-      } else if (typeof nativeBinding === "string") {
-        const requireFunc = typeof __non_webpack_require__ === "function" ? __non_webpack_require__ : require;
-        addon = requireFunc(path3.resolve(nativeBinding).replace(/(\.node)?$/, ".node"));
-      } else {
-        addon = nativeBinding;
-      }
-      if (!addon.isInitialized) {
-        addon.setErrorConstructor(SqliteError);
-        addon.isInitialized = true;
-      }
-      if (!anonymous && !fs2.existsSync(path3.dirname(filename))) {
-        throw new TypeError("Cannot open database because the directory does not exist");
-      }
-      Object.defineProperties(this, {
-        [util2.cppdb]: { value: new addon.Database(filename, filenameGiven, anonymous, readonly, fileMustExist, timeout, verbose || null, buffer || null) },
-        ...wrappers.getters
-      });
-    }
-    var wrappers = require_wrappers();
-    Database2.prototype.prepare = wrappers.prepare;
-    Database2.prototype.transaction = require_transaction();
-    Database2.prototype.pragma = require_pragma();
-    Database2.prototype.backup = require_backup();
-    Database2.prototype.serialize = require_serialize();
-    Database2.prototype.function = require_function();
-    Database2.prototype.aggregate = require_aggregate();
-    Database2.prototype.table = require_table();
-    Database2.prototype.loadExtension = wrappers.loadExtension;
-    Database2.prototype.exec = wrappers.exec;
-    Database2.prototype.close = wrappers.close;
-    Database2.prototype.defaultSafeIntegers = wrappers.defaultSafeIntegers;
-    Database2.prototype.unsafeMode = wrappers.unsafeMode;
-    Database2.prototype[util2.inspect] = require_inspect();
-    module2.exports = Database2;
-  }
-});
-
-// node_modules/better-sqlite3/lib/index.js
-var require_lib3 = __commonJS({
-  "node_modules/better-sqlite3/lib/index.js"(exports2, module2) {
-    "use strict";
-    module2.exports = require_database();
-    module2.exports.SqliteError = require_sqlite_error();
-  }
-});
-
 // node_modules/drizzle-orm/entity.js
 function is(value, type2) {
   if (!value || typeof value !== "object") {
@@ -24746,123 +23974,6 @@ var init_entity = __esm({
   "node_modules/drizzle-orm/entity.js"() {
     entityKind = Symbol.for("drizzle:entityKind");
     hasOwnEntityKind = Symbol.for("drizzle:hasOwnEntityKind");
-  }
-});
-
-// node_modules/drizzle-orm/logger.js
-var ConsoleLogWriter, DefaultLogger, NoopLogger;
-var init_logger = __esm({
-  "node_modules/drizzle-orm/logger.js"() {
-    init_entity();
-    ConsoleLogWriter = class {
-      static [entityKind] = "ConsoleLogWriter";
-      write(message) {
-        console.log(message);
-      }
-    };
-    DefaultLogger = class {
-      static [entityKind] = "DefaultLogger";
-      writer;
-      constructor(config) {
-        this.writer = config?.writer ?? new ConsoleLogWriter();
-      }
-      logQuery(query, params) {
-        const stringifiedParams = params.map((p) => {
-          try {
-            return JSON.stringify(p);
-          } catch {
-            return String(p);
-          }
-        });
-        const paramsStr = stringifiedParams.length ? ` -- params: [${stringifiedParams.join(", ")}]` : "";
-        this.writer.write(`Query: ${query}${paramsStr}`);
-      }
-    };
-    NoopLogger = class {
-      static [entityKind] = "NoopLogger";
-      logQuery() {
-      }
-    };
-  }
-});
-
-// node_modules/drizzle-orm/table.utils.js
-var TableName;
-var init_table_utils = __esm({
-  "node_modules/drizzle-orm/table.utils.js"() {
-    TableName = Symbol.for("drizzle:Name");
-  }
-});
-
-// node_modules/drizzle-orm/table.js
-function isTable(table) {
-  return typeof table === "object" && table !== null && IsDrizzleTable in table;
-}
-function getTableName(table) {
-  return table[TableName];
-}
-function getTableUniqueName(table) {
-  return `${table[Schema] ?? "public"}.${table[TableName]}`;
-}
-var Schema, Columns, ExtraConfigColumns, OriginalName, BaseName, IsAlias, ExtraConfigBuilder, IsDrizzleTable, Table;
-var init_table = __esm({
-  "node_modules/drizzle-orm/table.js"() {
-    init_entity();
-    init_table_utils();
-    Schema = Symbol.for("drizzle:Schema");
-    Columns = Symbol.for("drizzle:Columns");
-    ExtraConfigColumns = Symbol.for("drizzle:ExtraConfigColumns");
-    OriginalName = Symbol.for("drizzle:OriginalName");
-    BaseName = Symbol.for("drizzle:BaseName");
-    IsAlias = Symbol.for("drizzle:IsAlias");
-    ExtraConfigBuilder = Symbol.for("drizzle:ExtraConfigBuilder");
-    IsDrizzleTable = Symbol.for("drizzle:IsDrizzleTable");
-    Table = class {
-      static [entityKind] = "Table";
-      /** @internal */
-      static Symbol = {
-        Name: TableName,
-        Schema,
-        OriginalName,
-        Columns,
-        ExtraConfigColumns,
-        BaseName,
-        IsAlias,
-        ExtraConfigBuilder
-      };
-      /**
-       * @internal
-       * Can be changed if the table is aliased.
-       */
-      [TableName];
-      /**
-       * @internal
-       * Used to store the original name of the table, before any aliasing.
-       */
-      [OriginalName];
-      /** @internal */
-      [Schema];
-      /** @internal */
-      [Columns];
-      /** @internal */
-      [ExtraConfigColumns];
-      /**
-       *  @internal
-       * Used to store the table name before the transformation via the `tableCreator` functions.
-       */
-      [BaseName];
-      /** @internal */
-      [IsAlias] = false;
-      /** @internal */
-      [IsDrizzleTable] = true;
-      /** @internal */
-      [ExtraConfigBuilder] = void 0;
-      constructor(name, schema, baseName) {
-        this[TableName] = this[OriginalName] = name;
-        this[Schema] = schema;
-        this[BaseName] = baseName;
-      }
-    };
   }
 });
 
@@ -25029,6 +24140,14 @@ var init_column_builder = __esm({
         this.config.name = name;
       }
     };
+  }
+});
+
+// node_modules/drizzle-orm/table.utils.js
+var TableName;
+var init_table_utils = __esm({
+  "node_modules/drizzle-orm/table.utils.js"() {
+    TableName = Symbol.for("drizzle:Name");
   }
 });
 
@@ -25586,6 +24705,78 @@ var init_view_common = __esm({
   }
 });
 
+// node_modules/drizzle-orm/table.js
+function isTable(table) {
+  return typeof table === "object" && table !== null && IsDrizzleTable in table;
+}
+function getTableName(table) {
+  return table[TableName];
+}
+function getTableUniqueName(table) {
+  return `${table[Schema] ?? "public"}.${table[TableName]}`;
+}
+var Schema, Columns, ExtraConfigColumns, OriginalName, BaseName, IsAlias, ExtraConfigBuilder, IsDrizzleTable, Table;
+var init_table = __esm({
+  "node_modules/drizzle-orm/table.js"() {
+    init_entity();
+    init_table_utils();
+    Schema = Symbol.for("drizzle:Schema");
+    Columns = Symbol.for("drizzle:Columns");
+    ExtraConfigColumns = Symbol.for("drizzle:ExtraConfigColumns");
+    OriginalName = Symbol.for("drizzle:OriginalName");
+    BaseName = Symbol.for("drizzle:BaseName");
+    IsAlias = Symbol.for("drizzle:IsAlias");
+    ExtraConfigBuilder = Symbol.for("drizzle:ExtraConfigBuilder");
+    IsDrizzleTable = Symbol.for("drizzle:IsDrizzleTable");
+    Table = class {
+      static [entityKind] = "Table";
+      /** @internal */
+      static Symbol = {
+        Name: TableName,
+        Schema,
+        OriginalName,
+        Columns,
+        ExtraConfigColumns,
+        BaseName,
+        IsAlias,
+        ExtraConfigBuilder
+      };
+      /**
+       * @internal
+       * Can be changed if the table is aliased.
+       */
+      [TableName];
+      /**
+       * @internal
+       * Used to store the original name of the table, before any aliasing.
+       */
+      [OriginalName];
+      /** @internal */
+      [Schema];
+      /** @internal */
+      [Columns];
+      /** @internal */
+      [ExtraConfigColumns];
+      /**
+       *  @internal
+       * Used to store the table name before the transformation via the `tableCreator` functions.
+       */
+      [BaseName];
+      /** @internal */
+      [IsAlias] = false;
+      /** @internal */
+      [IsDrizzleTable] = true;
+      /** @internal */
+      [ExtraConfigBuilder] = void 0;
+      constructor(name, schema, baseName) {
+        this[TableName] = this[OriginalName] = name;
+        this[Schema] = schema;
+        this[BaseName] = baseName;
+      }
+    };
+  }
+});
+
 // node_modules/drizzle-orm/sql/sql.js
 function isSQLWrapper(value) {
   return value !== null && value !== void 0 && typeof value.getSQL === "function";
@@ -25999,7 +25190,7 @@ var init_sql = __esm({
 function mapResultRow(columns, row, joinsNotNullableMap) {
   const nullifyMap = {};
   const result = columns.reduce(
-    (result2, { path: path3, field }, columnIndex) => {
+    (result2, { path: path2, field }, columnIndex) => {
       let decoder;
       if (is(field, Column)) {
         decoder = field;
@@ -26011,8 +25202,8 @@ function mapResultRow(columns, row, joinsNotNullableMap) {
         decoder = field.sql.decoder;
       }
       let node = result2;
-      for (const [pathChunkIndex, pathChunk] of path3.entries()) {
-        if (pathChunkIndex < path3.length - 1) {
+      for (const [pathChunkIndex, pathChunk] of path2.entries()) {
+        if (pathChunkIndex < path2.length - 1) {
           if (!(pathChunk in node)) {
             node[pathChunk] = {};
           }
@@ -26020,8 +25211,8 @@ function mapResultRow(columns, row, joinsNotNullableMap) {
         } else {
           const rawValue = row[columnIndex];
           const value = node[pathChunk] = rawValue === null ? null : decoder.mapFromDriverValue(rawValue);
-          if (joinsNotNullableMap && is(field, Column) && path3.length === 2) {
-            const objectName = path3[0];
+          if (joinsNotNullableMap && is(field, Column) && path2.length === 2) {
+            const objectName = path2[0];
             if (!(objectName in nullifyMap)) {
               nullifyMap[objectName] = value === null ? getTableName(field.table) : false;
             } else if (typeof nullifyMap[objectName] === "string" && nullifyMap[objectName] !== getTableName(field.table)) {
@@ -26157,6 +25348,43 @@ var init_utils = __esm({
     init_table();
     init_view_common();
     textDecoder = typeof TextDecoder === "undefined" ? null : new TextDecoder();
+  }
+});
+
+// node_modules/drizzle-orm/logger.js
+var ConsoleLogWriter, DefaultLogger, NoopLogger;
+var init_logger = __esm({
+  "node_modules/drizzle-orm/logger.js"() {
+    init_entity();
+    ConsoleLogWriter = class {
+      static [entityKind] = "ConsoleLogWriter";
+      write(message) {
+        console.log(message);
+      }
+    };
+    DefaultLogger = class {
+      static [entityKind] = "DefaultLogger";
+      writer;
+      constructor(config) {
+        this.writer = config?.writer ?? new ConsoleLogWriter();
+      }
+      logQuery(query, params) {
+        const stringifiedParams = params.map((p) => {
+          try {
+            return JSON.stringify(p);
+          } catch {
+            return String(p);
+          }
+        });
+        const paramsStr = stringifiedParams.length ? ` -- params: [${stringifiedParams.join(", ")}]` : "";
+        this.writer.write(`Query: ${query}${paramsStr}`);
+      }
+    };
+    NoopLogger = class {
+      static [entityKind] = "NoopLogger";
+      logQuery() {
+      }
+    };
   }
 });
 
@@ -30746,10 +29974,33 @@ var init_sqlite_core = __esm({
   }
 });
 
-// node_modules/drizzle-orm/better-sqlite3/session.js
-var BetterSQLiteSession, BetterSQLiteTransaction, PreparedQuery;
+// node_modules/drizzle-orm/libsql/session.js
+function normalizeRow(obj) {
+  return Object.keys(obj).reduce((acc, key) => {
+    if (Object.prototype.propertyIsEnumerable.call(obj, key)) {
+      acc[key] = obj[key];
+    }
+    return acc;
+  }, {});
+}
+function normalizeFieldValue(value) {
+  if (typeof ArrayBuffer !== "undefined" && value instanceof ArrayBuffer) {
+    if (typeof Buffer !== "undefined") {
+      if (!(value instanceof Buffer)) {
+        return Buffer.from(value);
+      }
+      return value;
+    }
+    if (typeof TextDecoder !== "undefined") {
+      return new TextDecoder().decode(value);
+    }
+    throw new Error("TextDecoder is not available. Please provide either Buffer or TextDecoder polyfill.");
+  }
+  return value;
+}
+var LibSQLSession, LibSQLTransaction, LibSQLPreparedQuery;
 var init_session2 = __esm({
-  "node_modules/drizzle-orm/better-sqlite3/session.js"() {
+  "node_modules/drizzle-orm/libsql/session.js"() {
     init_core();
     init_entity();
     init_logger();
@@ -30757,102 +30008,195 @@ var init_session2 = __esm({
     init_sqlite_core();
     init_session();
     init_utils();
-    BetterSQLiteSession = class extends SQLiteSession {
-      constructor(client, dialect, schema, options = {}) {
+    LibSQLSession = class _LibSQLSession extends SQLiteSession {
+      constructor(client2, dialect, schema, options, tx) {
         super(dialect);
-        this.client = client;
+        this.client = client2;
         this.schema = schema;
+        this.options = options;
+        this.tx = tx;
         this.logger = options.logger ?? new NoopLogger();
         this.cache = options.cache ?? new NoopCache();
       }
-      static [entityKind] = "BetterSQLiteSession";
+      static [entityKind] = "LibSQLSession";
       logger;
       cache;
       prepareQuery(query, fields, executeMethod, isResponseInArrayMode, customResultMapper, queryMetadata, cacheConfig) {
-        const stmt = this.client.prepare(query.sql);
-        return new PreparedQuery(
-          stmt,
+        return new LibSQLPreparedQuery(
+          this.client,
           query,
           this.logger,
           this.cache,
           queryMetadata,
           cacheConfig,
           fields,
+          this.tx,
           executeMethod,
           isResponseInArrayMode,
           customResultMapper
         );
       }
-      transaction(transaction, config = {}) {
-        const tx = new BetterSQLiteTransaction("sync", this.dialect, this, this.schema);
-        const nativeTx = this.client.transaction(transaction);
-        return nativeTx[config.behavior ?? "deferred"](tx);
+      async batch(queries) {
+        const preparedQueries = [];
+        const builtQueries = [];
+        for (const query of queries) {
+          const preparedQuery = query._prepare();
+          const builtQuery = preparedQuery.getQuery();
+          preparedQueries.push(preparedQuery);
+          builtQueries.push({ sql: builtQuery.sql, args: builtQuery.params });
+        }
+        const batchResults = await this.client.batch(builtQueries);
+        return batchResults.map((result, i) => preparedQueries[i].mapResult(result, true));
       }
-    };
-    BetterSQLiteTransaction = class _BetterSQLiteTransaction extends SQLiteTransaction {
-      static [entityKind] = "BetterSQLiteTransaction";
-      transaction(transaction) {
-        const savepointName = `sp${this.nestedIndex}`;
-        const tx = new _BetterSQLiteTransaction("sync", this.dialect, this.session, this.schema, this.nestedIndex + 1);
-        this.session.run(sql.raw(`savepoint ${savepointName}`));
+      async migrate(queries) {
+        const preparedQueries = [];
+        const builtQueries = [];
+        for (const query of queries) {
+          const preparedQuery = query._prepare();
+          const builtQuery = preparedQuery.getQuery();
+          preparedQueries.push(preparedQuery);
+          builtQueries.push({ sql: builtQuery.sql, args: builtQuery.params });
+        }
+        const batchResults = await this.client.migrate(builtQueries);
+        return batchResults.map((result, i) => preparedQueries[i].mapResult(result, true));
+      }
+      async transaction(transaction, _config) {
+        const libsqlTx = await this.client.transaction();
+        const session = new _LibSQLSession(
+          this.client,
+          this.dialect,
+          this.schema,
+          this.options,
+          libsqlTx
+        );
+        const tx = new LibSQLTransaction("async", this.dialect, session, this.schema);
         try {
-          const result = transaction(tx);
-          this.session.run(sql.raw(`release savepoint ${savepointName}`));
+          const result = await transaction(tx);
+          await libsqlTx.commit();
           return result;
         } catch (err) {
-          this.session.run(sql.raw(`rollback to savepoint ${savepointName}`));
+          await libsqlTx.rollback();
+          throw err;
+        }
+      }
+      extractRawAllValueFromBatchResult(result) {
+        return result.rows;
+      }
+      extractRawGetValueFromBatchResult(result) {
+        return result.rows[0];
+      }
+      extractRawValuesValueFromBatchResult(result) {
+        return result.rows;
+      }
+    };
+    LibSQLTransaction = class _LibSQLTransaction extends SQLiteTransaction {
+      static [entityKind] = "LibSQLTransaction";
+      async transaction(transaction) {
+        const savepointName = `sp${this.nestedIndex}`;
+        const tx = new _LibSQLTransaction("async", this.dialect, this.session, this.schema, this.nestedIndex + 1);
+        await this.session.run(sql.raw(`savepoint ${savepointName}`));
+        try {
+          const result = await transaction(tx);
+          await this.session.run(sql.raw(`release savepoint ${savepointName}`));
+          return result;
+        } catch (err) {
+          await this.session.run(sql.raw(`rollback to savepoint ${savepointName}`));
           throw err;
         }
       }
     };
-    PreparedQuery = class extends SQLitePreparedQuery {
-      constructor(stmt, query, logger, cache, queryMetadata, cacheConfig, fields, executeMethod, _isResponseInArrayMode, customResultMapper) {
-        super("sync", executeMethod, query, cache, queryMetadata, cacheConfig);
-        this.stmt = stmt;
+    LibSQLPreparedQuery = class extends SQLitePreparedQuery {
+      constructor(client2, query, logger, cache, queryMetadata, cacheConfig, fields, tx, executeMethod, _isResponseInArrayMode, customResultMapper) {
+        super("async", executeMethod, query, cache, queryMetadata, cacheConfig);
+        this.client = client2;
         this.logger = logger;
         this.fields = fields;
+        this.tx = tx;
         this._isResponseInArrayMode = _isResponseInArrayMode;
         this.customResultMapper = customResultMapper;
+        this.customResultMapper = customResultMapper;
+        this.fields = fields;
       }
-      static [entityKind] = "BetterSQLitePreparedQuery";
-      run(placeholderValues) {
+      static [entityKind] = "LibSQLPreparedQuery";
+      async run(placeholderValues) {
         const params = fillPlaceholders(this.query.params, placeholderValues ?? {});
         this.logger.logQuery(this.query.sql, params);
-        return this.stmt.run(...params);
+        return await this.queryWithCache(this.query.sql, params, async () => {
+          const stmt = { sql: this.query.sql, args: params };
+          return this.tx ? this.tx.execute(stmt) : this.client.execute(stmt);
+        });
       }
-      all(placeholderValues) {
-        const { fields, joinsNotNullableMap, query, logger, stmt, customResultMapper } = this;
+      async all(placeholderValues) {
+        const { fields, logger, query, tx, client: client2, customResultMapper } = this;
         if (!fields && !customResultMapper) {
           const params = fillPlaceholders(query.params, placeholderValues ?? {});
           logger.logQuery(query.sql, params);
-          return stmt.all(...params);
+          return await this.queryWithCache(query.sql, params, async () => {
+            const stmt = { sql: query.sql, args: params };
+            return (tx ? tx.execute(stmt) : client2.execute(stmt)).then(({ rows: rows2 }) => this.mapAllResult(rows2));
+          });
         }
-        const rows = this.values(placeholderValues);
-        if (customResultMapper) {
-          return customResultMapper(rows);
-        }
-        return rows.map((row) => mapResultRow(fields, row, joinsNotNullableMap));
+        const rows = await this.values(placeholderValues);
+        return this.mapAllResult(rows);
       }
-      get(placeholderValues) {
-        const params = fillPlaceholders(this.query.params, placeholderValues ?? {});
-        this.logger.logQuery(this.query.sql, params);
-        const { fields, stmt, joinsNotNullableMap, customResultMapper } = this;
-        if (!fields && !customResultMapper) {
-          return stmt.get(...params);
+      mapAllResult(rows, isFromBatch) {
+        if (isFromBatch) {
+          rows = rows.rows;
         }
-        const row = stmt.raw().get(...params);
+        if (!this.fields && !this.customResultMapper) {
+          return rows.map((row) => normalizeRow(row));
+        }
+        if (this.customResultMapper) {
+          return this.customResultMapper(rows, normalizeFieldValue);
+        }
+        return rows.map((row) => {
+          return mapResultRow(
+            this.fields,
+            Array.prototype.slice.call(row).map((v) => normalizeFieldValue(v)),
+            this.joinsNotNullableMap
+          );
+        });
+      }
+      async get(placeholderValues) {
+        const { fields, logger, query, tx, client: client2, customResultMapper } = this;
+        if (!fields && !customResultMapper) {
+          const params = fillPlaceholders(query.params, placeholderValues ?? {});
+          logger.logQuery(query.sql, params);
+          return await this.queryWithCache(query.sql, params, async () => {
+            const stmt = { sql: query.sql, args: params };
+            return (tx ? tx.execute(stmt) : client2.execute(stmt)).then(({ rows: rows2 }) => this.mapGetResult(rows2));
+          });
+        }
+        const rows = await this.values(placeholderValues);
+        return this.mapGetResult(rows);
+      }
+      mapGetResult(rows, isFromBatch) {
+        if (isFromBatch) {
+          rows = rows.rows;
+        }
+        const row = rows[0];
+        if (!this.fields && !this.customResultMapper) {
+          return normalizeRow(row);
+        }
         if (!row) {
           return void 0;
         }
-        if (customResultMapper) {
-          return customResultMapper([row]);
+        if (this.customResultMapper) {
+          return this.customResultMapper(rows, normalizeFieldValue);
         }
-        return mapResultRow(fields, row, joinsNotNullableMap);
+        return mapResultRow(
+          this.fields,
+          Array.prototype.slice.call(row).map((v) => normalizeFieldValue(v)),
+          this.joinsNotNullableMap
+        );
       }
-      values(placeholderValues) {
+      async values(placeholderValues) {
         const params = fillPlaceholders(this.query.params, placeholderValues ?? {});
         this.logger.logQuery(this.query.sql, params);
-        return this.stmt.raw().all(...params);
+        return await this.queryWithCache(this.query.sql, params, async () => {
+          const stmt = { sql: this.query.sql, args: params };
+          return (this.tx ? this.tx.execute(stmt) : this.client.execute(stmt)).then(({ rows }) => rows);
+        });
       }
       /** @internal */
       isResponseInArrayMode() {
@@ -30862,9 +30206,9 @@ var init_session2 = __esm({
   }
 });
 
-// node_modules/drizzle-orm/better-sqlite3/driver.js
-function construct(client, config = {}) {
-  const dialect = new SQLiteSyncDialect({ casing: config.casing });
+// node_modules/drizzle-orm/libsql/driver-core.js
+function construct(client2, config = {}) {
+  const dialect = new SQLiteAsyncDialect({ casing: config.casing });
   let logger;
   if (config.logger === true) {
     logger = new DefaultLogger();
@@ -30883,43 +30227,55 @@ function construct(client, config = {}) {
       tableNamesMap: tablesConfig.tableNamesMap
     };
   }
-  const session = new BetterSQLiteSession(client, dialect, schema, { logger });
-  const db2 = new BetterSQLite3Database("sync", dialect, session, schema);
-  db2.$client = client;
+  const session = new LibSQLSession(client2, dialect, schema, { logger, cache: config.cache }, void 0);
+  const db2 = new LibSQLDatabase("async", dialect, session, schema);
+  db2.$client = client2;
+  db2.$cache = config.cache;
+  if (db2.$cache) {
+    db2.$cache["invalidate"] = config.cache?.onMutate;
+  }
   return db2;
 }
-function drizzle(...params) {
-  if (params[0] === void 0 || typeof params[0] === "string") {
-    const instance = params[0] === void 0 ? new import_better_sqlite3.default() : new import_better_sqlite3.default(params[0]);
-    return construct(instance, params[1]);
-  }
-  if (isConfig(params[0])) {
-    const { connection, client, ...drizzleConfig } = params[0];
-    if (client) return construct(client, drizzleConfig);
-    if (typeof connection === "object") {
-      const { source, ...options } = connection;
-      const instance2 = new import_better_sqlite3.default(source, options);
-      return construct(instance2, drizzleConfig);
-    }
-    const instance = new import_better_sqlite3.default(connection);
-    return construct(instance, drizzleConfig);
-  }
-  return construct(params[0], params[1]);
-}
-var import_better_sqlite3, BetterSQLite3Database;
-var init_driver = __esm({
-  "node_modules/drizzle-orm/better-sqlite3/driver.js"() {
-    import_better_sqlite3 = __toESM(require_lib3(), 1);
+var LibSQLDatabase;
+var init_driver_core = __esm({
+  "node_modules/drizzle-orm/libsql/driver-core.js"() {
     init_entity();
     init_logger();
     init_relations();
     init_db();
     init_dialect();
-    init_utils();
     init_session2();
-    BetterSQLite3Database = class extends BaseSQLiteDatabase {
-      static [entityKind] = "BetterSQLite3Database";
+    LibSQLDatabase = class extends BaseSQLiteDatabase {
+      static [entityKind] = "LibSQLDatabase";
+      async batch(batch) {
+        return this.session.batch(batch);
+      }
     };
+  }
+});
+
+// node_modules/drizzle-orm/libsql/driver.js
+function drizzle(...params) {
+  if (typeof params[0] === "string") {
+    const instance = (0, import_client.createClient)({
+      url: params[0]
+    });
+    return construct(instance, params[1]);
+  }
+  if (isConfig(params[0])) {
+    const { connection, client: client2, ...drizzleConfig } = params[0];
+    if (client2) return construct(client2, drizzleConfig);
+    const instance = typeof connection === "string" ? (0, import_client.createClient)({ url: connection }) : (0, import_client.createClient)(connection);
+    return construct(instance, drizzleConfig);
+  }
+  return construct(params[0], params[1]);
+}
+var import_client;
+var init_driver = __esm({
+  "node_modules/drizzle-orm/libsql/driver.js"() {
+    import_client = require("@libsql/client");
+    init_utils();
+    init_driver_core();
     ((drizzle2) => {
       function mock(config) {
         return construct({}, config);
@@ -30929,9 +30285,9 @@ var init_driver = __esm({
   }
 });
 
-// node_modules/drizzle-orm/better-sqlite3/index.js
-var init_better_sqlite3 = __esm({
-  "node_modules/drizzle-orm/better-sqlite3/index.js"() {
+// node_modules/drizzle-orm/libsql/index.js
+var init_libsql = __esm({
+  "node_modules/drizzle-orm/libsql/index.js"() {
     init_driver();
     init_session2();
   }
@@ -31349,8 +30705,8 @@ var init_parseUtil = __esm({
     init_errors2();
     init_en();
     makeIssue = (params) => {
-      const { data, path: path3, errorMaps, issueData } = params;
-      const fullPath = [...path3, ...issueData.path || []];
+      const { data, path: path2, errorMaps, issueData } = params;
+      const fullPath = [...path2, ...issueData.path || []];
       const fullIssue = {
         ...issueData,
         path: fullPath
@@ -31658,11 +31014,11 @@ var init_types = __esm({
     init_parseUtil();
     init_util();
     ParseInputLazyPath = class {
-      constructor(parent, value, path3, key) {
+      constructor(parent, value, path2, key) {
         this._cachedPath = [];
         this.parent = parent;
         this.data = value;
-        this._path = path3;
+        this._path = path2;
         this._key = key;
       }
       get path() {
@@ -35587,27 +34943,14 @@ var init_schema = __esm({
 });
 
 // server/db.ts
-var import_better_sqlite33, import_path, dbPath, sqlite, db;
-var init_db2 = __esm({
-  "server/db.ts"() {
-    "use strict";
-    init_better_sqlite3();
-    import_better_sqlite33 = __toESM(require_lib3(), 1);
-    init_schema();
-    import_path = __toESM(require("path"), 1);
-    dbPath = import_path.default.join(process.cwd(), "data.db");
-    sqlite = new import_better_sqlite33.default(dbPath);
-    sqlite.pragma("journal_mode = WAL");
-    sqlite.pragma("foreign_keys = ON");
-    db = drizzle(sqlite, { schema: schema_exports });
-    sqlite.exec(`
+async function initDb() {
+  await client.executeMultiple(`
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
     plan TEXT NOT NULL DEFAULT 'free',
-    avatar TEXT,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    created_at TEXT NOT NULL
   );
 
   CREATE TABLE IF NOT EXISTS conversations (
@@ -35630,127 +34973,6 @@ var init_db2 = __esm({
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     query TEXT NOT NULL,
-    created_at TEXT NOT NULL
-  );
-
-  CREATE TABLE IF NOT EXISTS versions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    version TEXT NOT NULL,
-    codename TEXT,
-    release_notes TEXT NOT NULL,
-    changes TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'draft',
-    deployed_at TEXT,
-    created_at TEXT NOT NULL
-  );
-
-  CREATE TABLE IF NOT EXISTS feature_flags (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    key TEXT NOT NULL UNIQUE,
-    label TEXT NOT NULL,
-    description TEXT,
-    enabled INTEGER NOT NULL DEFAULT 0,
-    rollout_pct INTEGER NOT NULL DEFAULT 0,
-    updated_at TEXT NOT NULL
-  );
-
-  CREATE TABLE IF NOT EXISTS roadmap_items (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    description TEXT,
-    category TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'planned',
-    priority INTEGER NOT NULL DEFAULT 2,
-    votes INTEGER NOT NULL DEFAULT 0,
-    quarter TEXT,
-    created_at TEXT NOT NULL,
-    shipped_at TEXT
-  );
-
-  CREATE TABLE IF NOT EXISTS ad_campaigns (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    channel TEXT NOT NULL,
-    headline TEXT NOT NULL,
-    body TEXT NOT NULL,
-    cta TEXT NOT NULL,
-    target_audience TEXT,
-    status TEXT NOT NULL DEFAULT 'active',
-    impressions INTEGER NOT NULL DEFAULT 0,
-    clicks INTEGER NOT NULL DEFAULT 0,
-    conversions INTEGER NOT NULL DEFAULT 0,
-    variant_group TEXT,
-    created_at TEXT NOT NULL,
-    scheduled_for TEXT
-  );
-
-  CREATE TABLE IF NOT EXISTS email_sequences (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    trigger_event TEXT NOT NULL,
-    step_number INTEGER NOT NULL,
-    delay_days INTEGER NOT NULL DEFAULT 0,
-    subject TEXT NOT NULL,
-    preheader TEXT,
-    body TEXT NOT NULL,
-    cta_text TEXT,
-    cta_url TEXT,
-    active INTEGER NOT NULL DEFAULT 1,
-    sent_count INTEGER NOT NULL DEFAULT 0,
-    open_rate REAL NOT NULL DEFAULT 0,
-    click_rate REAL NOT NULL DEFAULT 0,
-    created_at TEXT NOT NULL
-  );
-
-  CREATE TABLE IF NOT EXISTS social_posts (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    platform TEXT NOT NULL,
-    content TEXT NOT NULL,
-    hashtags TEXT,
-    status TEXT NOT NULL DEFAULT 'queued',
-    scheduled_for TEXT,
-    posted_at TEXT,
-    engagement TEXT,
-    generated_by TEXT NOT NULL DEFAULT 'system',
-    created_at TEXT NOT NULL
-  );
-
-  CREATE TABLE IF NOT EXISTS analytics_events (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    event TEXT NOT NULL,
-    page TEXT,
-    user_id INTEGER,
-    session_id TEXT,
-    referrer TEXT,
-    properties TEXT,
-    created_at TEXT NOT NULL
-  );
-
-  CREATE TABLE IF NOT EXISTS ab_tests (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    description TEXT,
-    hypothesis TEXT,
-    metric TEXT NOT NULL,
-    variants TEXT NOT NULL,
-    results TEXT,
-    status TEXT NOT NULL DEFAULT 'running',
-    winner TEXT,
-    started_at TEXT NOT NULL,
-    concluded_at TEXT
-  );
-
-  CREATE TABLE IF NOT EXISTS growth_metrics (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    date TEXT NOT NULL UNIQUE,
-    dau INTEGER NOT NULL DEFAULT 0,
-    mau INTEGER NOT NULL DEFAULT 0,
-    new_signups INTEGER NOT NULL DEFAULT 0,
-    pro_upgrades INTEGER NOT NULL DEFAULT 0,
-    churned INTEGER NOT NULL DEFAULT 0,
-    total_searches INTEGER NOT NULL DEFAULT 0,
-    avg_session_min REAL NOT NULL DEFAULT 0,
-    revenue REAL NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL
   );
 
@@ -35782,15 +35004,131 @@ var init_db2 = __esm({
     created_at TEXT NOT NULL
   );
 
-  CREATE TABLE IF NOT EXISTS system_logs (
+  CREATE TABLE IF NOT EXISTS versions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    level TEXT NOT NULL DEFAULT 'info',
-    source TEXT NOT NULL,
-    message TEXT NOT NULL,
-    data TEXT,
+    version TEXT NOT NULL,
+    codename TEXT,
+    status TEXT NOT NULL DEFAULT 'draft',
+    changelog TEXT,
+    created_at TEXT NOT NULL,
+    deployed_at TEXT
+  );
+
+  CREATE TABLE IF NOT EXISTS feature_flags (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    key TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    enabled INTEGER NOT NULL DEFAULT 0,
+    rollout_pct INTEGER NOT NULL DEFAULT 0,
+    description TEXT,
+    updated_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS roadmap_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    description TEXT,
+    status TEXT NOT NULL DEFAULT 'planned',
+    votes INTEGER NOT NULL DEFAULT 0,
+    priority TEXT NOT NULL DEFAULT 'medium',
     created_at TEXT NOT NULL
   );
-`);
+
+  CREATE TABLE IF NOT EXISTS ad_campaigns (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    platform TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'active',
+    budget REAL NOT NULL DEFAULT 0,
+    spend REAL NOT NULL DEFAULT 0,
+    impressions INTEGER NOT NULL DEFAULT 0,
+    clicks INTEGER NOT NULL DEFAULT 0,
+    conversions INTEGER NOT NULL DEFAULT 0,
+    copy TEXT,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS email_sequences (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    trigger TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    body TEXT NOT NULL,
+    delay_days INTEGER NOT NULL DEFAULT 0,
+    sent_count INTEGER NOT NULL DEFAULT 0,
+    open_rate REAL NOT NULL DEFAULT 0,
+    active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS social_posts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    platform TEXT NOT NULL,
+    content TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'queued',
+    scheduled_at TEXT,
+    posted_at TEXT,
+    likes INTEGER NOT NULL DEFAULT 0,
+    shares INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS analytics_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event TEXT NOT NULL,
+    user_id INTEGER,
+    properties TEXT,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS ab_tests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'running',
+    variant_a TEXT NOT NULL,
+    variant_b TEXT NOT NULL,
+    metric TEXT NOT NULL DEFAULT 'conversion',
+    impressions_a INTEGER NOT NULL DEFAULT 0,
+    impressions_b INTEGER NOT NULL DEFAULT 0,
+    conversions_a INTEGER NOT NULL DEFAULT 0,
+    conversions_b INTEGER NOT NULL DEFAULT 0,
+    winner TEXT,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS growth_metrics (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    date TEXT NOT NULL UNIQUE,
+    dau INTEGER NOT NULL DEFAULT 0,
+    mau INTEGER NOT NULL DEFAULT 0,
+    revenue REAL NOT NULL DEFAULT 0,
+    searches INTEGER NOT NULL DEFAULT 0,
+    signups INTEGER NOT NULL DEFAULT 0,
+    pro_upgrades INTEGER NOT NULL DEFAULT 0,
+    churned INTEGER NOT NULL DEFAULT 0
+  );
+
+  CREATE TABLE IF NOT EXISTS system_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    level TEXT NOT NULL DEFAULT 'INFO',
+    source TEXT NOT NULL,
+    message TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  );
+  `);
+  console.log("[db] Tables initialized");
+}
+var import_client2, client, db;
+var init_db2 = __esm({
+  "server/db.ts"() {
+    "use strict";
+    import_client2 = require("@libsql/client");
+    init_libsql();
+    init_schema();
+    client = (0, import_client2.createClient)({
+      url: process.env.DATABASE_URL || "file:./data.db"
+    });
+    db = drizzle(client, { schema: schema_exports });
   }
 });
 
@@ -35808,8 +35146,8 @@ __export(version_engine_exports, {
   toggleFeatureFlag: () => toggleFeatureFlag,
   voteRoadmapItem: () => voteRoadmapItem
 });
-function log(level, message, data) {
-  db.insert(systemLogs).values({
+async function log(level, message, data) {
+  await db.insert(systemLogs).values({
     level,
     source: "version_engine",
     message,
@@ -35817,39 +35155,39 @@ function log(level, message, data) {
     createdAt: now()
   }).run();
 }
-function getCurrentVersion() {
-  return db.select().from(versions).where(eq(versions.status, "live")).orderBy(desc(versions.createdAt)).get();
+async function getCurrentVersion() {
+  return await db.select().from(versions).where(eq(versions.status, "live")).orderBy(desc(versions.createdAt)).get();
 }
-function getAllVersions() {
-  return db.select().from(versions).orderBy(desc(versions.createdAt)).all();
+async function getAllVersions() {
+  return await db.select().from(versions).orderBy(desc(versions.createdAt)).all();
 }
-function getFeatureFlags() {
-  return db.select().from(featureFlags).all();
+async function getFeatureFlags() {
+  return await db.select().from(featureFlags).all();
 }
-function toggleFeatureFlag(key, enabled) {
-  db.update(featureFlags).set({ enabled: enabled ? 1 : 0, updatedAt: now() }).where(eq(featureFlags.key, key)).run();
+async function toggleFeatureFlag(key, enabled) {
+  await db.update(featureFlags).set({ enabled: enabled ? 1 : 0, updatedAt: now() }).where(eq(featureFlags.key, key)).run();
   log("info", `Feature flag '${key}' set to ${enabled ? "ON" : "OFF"}`);
 }
-function setRolloutPct(key, pct) {
-  db.update(featureFlags).set({ rolloutPct: pct, updatedAt: now() }).where(eq(featureFlags.key, key)).run();
+async function setRolloutPct(key, pct) {
+  await db.update(featureFlags).set({ rolloutPct: pct, updatedAt: now() }).where(eq(featureFlags.key, key)).run();
   log("info", `Feature flag '${key}' rollout set to ${pct}%`);
 }
-function getRoadmap() {
-  return db.select().from(roadmapItems).orderBy(roadmapItems.priority, desc(roadmapItems.votes)).all();
+async function getRoadmap() {
+  return await db.select().from(roadmapItems).orderBy(roadmapItems.priority, desc(roadmapItems.votes)).all();
 }
-function advanceRoadmapItem(id, status) {
+async function advanceRoadmapItem(id, status) {
   const updates = { status };
   if (status === "shipped") updates.shippedAt = now();
-  db.update(roadmapItems).set(updates).where(eq(roadmapItems.id, id)).run();
+  await db.update(roadmapItems).set(updates).where(eq(roadmapItems.id, id)).run();
   log("info", `Roadmap item #${id} advanced to status: ${status}`);
 }
-function voteRoadmapItem(id) {
-  const item = db.select().from(roadmapItems).where(eq(roadmapItems.id, id)).get();
+async function voteRoadmapItem(id) {
+  const item = await db.select().from(roadmapItems).where(eq(roadmapItems.id, id)).get();
   if (!item) return;
-  db.update(roadmapItems).set({ votes: item.votes + 1 }).where(eq(roadmapItems.id, id)).run();
+  await db.update(roadmapItems).set({ votes: item.votes + 1 }).where(eq(roadmapItems.id, id)).run();
 }
-function autoVersionBump() {
-  const recentlyShipped = db.select().from(roadmapItems).where(and(
+async function autoVersionBump() {
+  const recentlyShipped = await db.select().from(roadmapItems).where(and(
     eq(roadmapItems.status, "shipped")
   )).all().filter((item) => {
     if (!item.shippedAt) return false;
@@ -35861,7 +35199,7 @@ function autoVersionBump() {
   if (!current) return null;
   const [major, minor, patch] = current.version.split(".").map(Number);
   const newVersion = `${major}.${minor + 1}.0`;
-  const exists2 = db.select().from(versions).where(eq(versions.version, newVersion)).get();
+  const exists2 = await db.select().from(versions).where(eq(versions.version, newVersion)).get();
   if (exists2) return null;
   const changes = recentlyShipped.map((item) => ({
     type: item.category,
@@ -35869,7 +35207,7 @@ function autoVersionBump() {
   }));
   const codenames = ["Inlet", "Crest", "Tide", "Shoal", "Reef", "Atoll", "Bight", "Sound"];
   const codename = codenames[Math.floor(Math.random() * codenames.length)];
-  const draft = db.insert(versions).values({
+  const draft = await db.insert(versions).values({
     version: newVersion,
     codename,
     releaseNotes: `${newVersion} '${codename}' includes ${recentlyShipped.length} shipped item(s) from the roadmap: ${recentlyShipped.map((i) => i.title).join(", ")}.`,
@@ -35880,12 +35218,12 @@ function autoVersionBump() {
   log("success", `Auto-generated version draft ${newVersion} '${codename}' with ${changes.length} changes`, { versionId: draft.id });
   return draft;
 }
-function promoteVersion(id) {
+async function promoteVersion(id) {
   const current = getCurrentVersion();
   if (current) {
-    db.update(versions).set({ status: "staging" }).where(eq(versions.id, current.id)).run();
+    await db.update(versions).set({ status: "staging" }).where(eq(versions.id, current.id)).run();
   }
-  db.update(versions).set({ status: "live", deployedAt: now() }).where(eq(versions.id, id)).run();
+  await db.update(versions).set({ status: "live", deployedAt: now() }).where(eq(versions.id, id)).run();
   log("success", `Version #${id} promoted to live`);
 }
 var now;
@@ -35918,8 +35256,8 @@ __export(marketing_engine_exports, {
   scheduleSocialPost: () => scheduleSocialPost,
   updateEmailMetrics: () => updateEmailMetrics
 });
-function log2(level, message, data) {
-  db.insert(systemLogs).values({
+async function log2(level, message, data) {
+  await db.insert(systemLogs).values({
     level,
     source: "marketing_engine",
     message,
@@ -35927,24 +35265,24 @@ function log2(level, message, data) {
     createdAt: now2()
   }).run();
 }
-function getCampaigns() {
-  return db.select().from(adCampaigns).orderBy(desc(adCampaigns.createdAt)).all();
+async function getCampaigns() {
+  return await db.select().from(adCampaigns).orderBy(desc(adCampaigns.createdAt)).all();
 }
-function getActiveCampaigns(channel) {
-  const q = db.select().from(adCampaigns).where(eq(adCampaigns.status, "active"));
+async function getActiveCampaigns(channel) {
+  const q = await db.select().from(adCampaigns).where(eq(adCampaigns.status, "active"));
   return q.all().filter((c) => !channel || c.channel === channel);
 }
-function recordImpression(campaignId) {
-  db.update(adCampaigns).set({ impressions: sql`impressions + 1` }).where(eq(adCampaigns.id, campaignId)).run();
+async function recordImpression(campaignId) {
+  await db.update(adCampaigns).set({ impressions: sql`impressions + 1` }).where(eq(adCampaigns.id, campaignId)).run();
 }
-function recordClick(campaignId) {
-  db.update(adCampaigns).set({ clicks: sql`clicks + 1` }).where(eq(adCampaigns.id, campaignId)).run();
+async function recordClick(campaignId) {
+  await db.update(adCampaigns).set({ clicks: sql`clicks + 1` }).where(eq(adCampaigns.id, campaignId)).run();
 }
-function recordConversion(campaignId) {
-  db.update(adCampaigns).set({ conversions: sql`conversions + 1` }).where(eq(adCampaigns.id, campaignId)).run();
+async function recordConversion(campaignId) {
+  await db.update(adCampaigns).set({ conversions: sql`conversions + 1` }).where(eq(adCampaigns.id, campaignId)).run();
 }
-function generateAdVariant(baseCampaignId) {
-  const base = db.select().from(adCampaigns).where(eq(adCampaigns.id, baseCampaignId)).get();
+async function generateAdVariant(baseCampaignId) {
+  const base = await db.select().from(adCampaigns).where(eq(adCampaigns.id, baseCampaignId)).get();
   if (!base) return null;
   const ctr = base.impressions > 0 ? base.clicks / base.impressions : 0;
   const convRate = base.clicks > 0 ? base.conversions / base.clicks : 0;
@@ -35967,7 +35305,7 @@ function generateAdVariant(baseCampaignId) {
   ];
   const variantData = variants[Math.floor(Math.random() * variants.length)];
   const newVariantGroup = `${base.variantGroup || "auto"}-${Date.now().toString(36)}`;
-  const created = db.insert(adCampaigns).values({
+  const created = await db.insert(adCampaigns).values({
     name: `${base.name} [Auto-Variant]`,
     channel: base.channel,
     headline: variantData.headline,
@@ -35988,14 +35326,14 @@ function generateAdVariant(baseCampaignId) {
   });
   return created;
 }
-function autoPauseUnderperformers(minImpressions = 500, minCTR = 0.02) {
-  const campaigns = db.select().from(adCampaigns).where(eq(adCampaigns.status, "active")).all();
+async function autoPauseUnderperformers(minImpressions = 500, minCTR = 0.02) {
+  const campaigns = await db.select().from(adCampaigns).where(eq(adCampaigns.status, "active")).all();
   let paused = 0;
   for (const c of campaigns) {
     if (c.impressions < minImpressions) continue;
     const ctr = c.clicks / c.impressions;
     if (ctr < minCTR) {
-      db.update(adCampaigns).set({ status: "paused" }).where(eq(adCampaigns.id, c.id)).run();
+      await db.update(adCampaigns).set({ status: "paused" }).where(eq(adCampaigns.id, c.id)).run();
       paused++;
       log2("warn", `Auto-paused campaign #${c.id} '${c.name}' \u2014 CTR ${(ctr * 100).toFixed(2)}% below ${minCTR * 100}% threshold`);
     }
@@ -36003,8 +35341,8 @@ function autoPauseUnderperformers(minImpressions = 500, minCTR = 0.02) {
   if (paused > 0) log2("info", `Auto-pause run complete: ${paused} campaign(s) paused`);
   return paused;
 }
-function scheduleSocialPost(platform, content, hashtags, scheduledFor) {
-  return db.insert(socialPosts).values({
+async function scheduleSocialPost(platform, content, hashtags, scheduledFor) {
+  return await db.insert(socialPosts).values({
     platform,
     content,
     hashtags: JSON.stringify(hashtags),
@@ -36014,19 +35352,19 @@ function scheduleSocialPost(platform, content, hashtags, scheduledFor) {
     createdAt: now2()
   }).returning().get();
 }
-function processScheduledPosts() {
+async function processScheduledPosts() {
   const now_ts = (/* @__PURE__ */ new Date()).toISOString();
-  const due = db.select().from(socialPosts).where(eq(socialPosts.status, "queued")).all().filter((p) => p.scheduledFor && p.scheduledFor <= now_ts);
+  const due = await db.select().from(socialPosts).where(eq(socialPosts.status, "queued")).all().filter((p) => p.scheduledFor && p.scheduledFor <= now_ts);
   for (const post of due) {
-    db.update(socialPosts).set({ status: "posted", postedAt: now2() }).where(eq(socialPosts.id, post.id)).run();
+    await db.update(socialPosts).set({ status: "posted", postedAt: now2() }).where(eq(socialPosts.id, post.id)).run();
     log2("success", `Auto-posted ${post.platform} post #${post.id}`);
   }
   return due.length;
 }
-function getSocialPosts() {
-  return db.select().from(socialPosts).orderBy(desc(socialPosts.createdAt)).all();
+async function getSocialPosts() {
+  return await db.select().from(socialPosts).orderBy(desc(socialPosts.createdAt)).all();
 }
-function generateWeeklySocialContent() {
+async function generateWeeklySocialContent() {
   const templates = [
     { platform: "twitter", content: "This week in Covelligent: we've shipped improvements to citation ranking and answer depth. Ask a complex question today \u2014 the difference is noticeable.", hashtags: ["#AI", "#Covelligent", "#Update"] },
     { platform: "twitter", content: "Reminder: Covelligent Pro includes API access. If you're building on top of AI search, we're a great foundation. Documentation is live.", hashtags: ["#AI", "#API", "#Developers"] },
@@ -36044,11 +35382,11 @@ function generateWeeklySocialContent() {
   log2("success", `Generated ${generated.length} social posts for the next week`);
   return generated;
 }
-function getAbTests() {
-  return db.select().from(abTests).orderBy(desc(abTests.startedAt)).all();
+async function getAbTests() {
+  return await db.select().from(abTests).orderBy(desc(abTests.startedAt)).all();
 }
-function analyzeAbTests() {
-  const running = db.select().from(abTests).where(eq(abTests.status, "running")).all();
+async function analyzeAbTests() {
+  const running = await db.select().from(abTests).where(eq(abTests.status, "running")).all();
   const concluded = [];
   for (const test of running) {
     const results = JSON.parse(test.results || "[]");
@@ -36062,7 +35400,7 @@ function analyzeAbTests() {
     const winnerRate = winner.conversions / Math.max(winner.impressions, 1);
     const runnerRate = sorted[1].conversions / Math.max(sorted[1].impressions, 1);
     if (winnerRate > runnerRate * 1.15) {
-      db.update(abTests).set({
+      await db.update(abTests).set({
         status: "concluded",
         winner: winner.variantId,
         concludedAt: now2()
@@ -36073,11 +35411,11 @@ function analyzeAbTests() {
   }
   return concluded;
 }
-function getEmailSequences() {
-  return db.select().from(emailSequences).orderBy(emailSequences.stepNumber).all();
+async function getEmailSequences() {
+  return await db.select().from(emailSequences).orderBy(emailSequences.stepNumber).all();
 }
-function updateEmailMetrics(id, openRate, clickRate, sentCount) {
-  db.update(emailSequences).set({ openRate, clickRate, sentCount }).where(eq(emailSequences.id, id)).run();
+async function updateEmailMetrics(id, openRate, clickRate, sentCount) {
+  await db.update(emailSequences).set({ openRate, clickRate, sentCount }).where(eq(emailSequences.id, id)).run();
 }
 var now2;
 var init_marketing_engine = __esm({
@@ -36102,8 +35440,8 @@ __export(analytics_engine_exports, {
   getSystemHealth: () => getSystemHealth,
   trackEvent: () => trackEvent
 });
-function log3(level, message, data) {
-  db.insert(systemLogs).values({
+async function log3(level, message, data) {
+  await db.insert(systemLogs).values({
     level,
     source: "analytics",
     message,
@@ -36111,8 +35449,8 @@ function log3(level, message, data) {
     createdAt: now3()
   }).run();
 }
-function trackEvent(event, options = {}) {
-  db.insert(analyticsEvents).values({
+async function trackEvent(event, options = {}) {
+  await db.insert(analyticsEvents).values({
     event,
     page: options.page ?? null,
     userId: options.userId ?? null,
@@ -36122,25 +35460,25 @@ function trackEvent(event, options = {}) {
     createdAt: now3()
   }).run();
 }
-function getRecentEvents(limit = 50) {
-  return db.select().from(analyticsEvents).orderBy(desc(analyticsEvents.createdAt)).limit(limit).all();
+async function getRecentEvents(limit = 50) {
+  return await db.select().from(analyticsEvents).orderBy(desc(analyticsEvents.createdAt)).limit(limit).all();
 }
-function getGrowthMetrics(days = 14) {
+async function getGrowthMetrics(days = 14) {
   try {
-    return db.select().from(growthMetrics).orderBy(desc(growthMetrics.date)).limit(days).all().reverse();
+    return await db.select().from(growthMetrics).orderBy(desc(growthMetrics.date)).limit(days).all().reverse();
   } catch {
     return [];
   }
 }
-function computeDailyMetrics() {
+async function computeDailyMetrics() {
   const date = today();
   try {
-    const allUsers = db.select().from(users).all();
+    const allUsers = await db.select().from(users).all();
     const proUsers = allUsers.filter((u) => u.plan === "pro");
     const dau = Math.max(allUsers.length, 1);
     const mau = Math.max(allUsers.length, 1);
     const revenue = proUsers.length * 24.99;
-    db.insert(growthMetrics).values({
+    await db.insert(growthMetrics).values({
       date,
       dau,
       mau,
@@ -36157,7 +35495,7 @@ function computeDailyMetrics() {
     log3("info", `Metrics for ${date} already exist \u2014 skipping`);
   }
 }
-function getGrowthKPIs() {
+async function getGrowthKPIs() {
   const metrics = getGrowthMetrics(14);
   if (metrics.length < 2) return null;
   const latest = metrics[metrics.length - 1];
@@ -36180,7 +35518,7 @@ function getGrowthKPIs() {
     totalRevenue: metrics.reduce((s, m) => s + m.revenue, 0)
   };
 }
-function getFunnelMetrics() {
+async function getFunnelMetrics() {
   const metrics = getGrowthMetrics(30);
   const totalVisitors = metrics.reduce((s, m) => s + m.dau, 0);
   const totalSignups = metrics.reduce((s, m) => s + m.newSignups, 0);
@@ -36193,8 +35531,8 @@ function getFunnelMetrics() {
     signupToUpgrade: totalSignups > 0 ? totalUpgrades / totalSignups * 100 : 0
   };
 }
-function getChurnRiskUsers() {
-  const allUsers = db.select().from(users).all();
+async function getChurnRiskUsers() {
+  const allUsers = await db.select().from(users).all();
   return allUsers.filter((u) => u.plan === "pro").slice(0, 3).map((u) => ({
     ...u,
     riskScore: Math.floor(Math.random() * 40 + 30),
@@ -36202,13 +35540,13 @@ function getChurnRiskUsers() {
     reason: ["search frequency down 60%", "no searches in 8 days", "downgrade intent signal detected"][Math.floor(Math.random() * 3)]
   }));
 }
-function getSystemHealth() {
+async function getSystemHealth() {
   return {
     dbSizeKb: 0,
     // placeholder
-    totalEvents: db.select().from(analyticsEvents).all().length,
-    totalConversations: db.select().from(conversations).all().length,
-    totalSearches: db.select().from(searches).all().length,
+    totalEvents: await db.select().from(analyticsEvents).all().length,
+    totalConversations: await db.select().from(conversations).all().length,
+    totalSearches: await db.select().from(searches).all().length,
     uptime: process.uptime(),
     status: "healthy",
     lastMetricsRun: getGrowthMetrics(1)[0]?.date ?? "never"
@@ -40045,10 +39383,10 @@ __export(seed_exports, {
   seedSystem: () => seedSystem
 });
 async function seedSystem() {
-  const existing = db.select().from(versions).all();
+  const existing = await db.select().from(versions).all();
   if (existing.length > 0) return;
   console.log("[seed] Seeding Covelligent system tables...");
-  db.insert(versions).values([
+  await db.insert(versions).values([
     {
       version: "1.0.0",
       codename: "Harbour",
@@ -40066,7 +39404,7 @@ async function seedSystem() {
       createdAt: now4()
     }
   ]).run();
-  db.insert(featureFlags).values([
+  await db.insert(featureFlags).values([
     { key: "deep_research_mode", label: "Deep Research Mode", description: "Multi-step agent that breaks complex queries into sub-queries", enabled: 1, rolloutPct: 100, updatedAt: now4() },
     { key: "file_upload", label: "File Upload & Analysis", description: "Allow users to upload PDFs, CSVs, and images for analysis", enabled: 0, rolloutPct: 0, updatedAt: now4() },
     { key: "voice_input", label: "Voice Input", description: "Speech-to-text search input via microphone", enabled: 0, rolloutPct: 0, updatedAt: now4() },
@@ -40076,7 +39414,7 @@ async function seedSystem() {
     { key: "browser_extension", label: "Browser Extension", description: "Chrome/Firefox extension for highlight-to-search", enabled: 0, rolloutPct: 0, updatedAt: now4() },
     { key: "mobile_app", label: "Mobile App (iOS/Android)", description: "Native mobile apps", enabled: 0, rolloutPct: 0, updatedAt: now4() }
   ]).run();
-  db.insert(roadmapItems).values([
+  await db.insert(roadmapItems).values([
     { title: "File Upload & Analysis", description: "Upload PDFs, spreadsheets, and images \u2014 Covelligent analyzes and answers questions about your documents.", category: "feature", status: "in_progress", priority: 1, votes: 847, quarter: "Q3 2026", createdAt: now4() },
     { title: "Voice Input", description: "Speak your query \u2014 Covelligent transcribes and searches instantly.", category: "feature", status: "planned", priority: 1, votes: 612, quarter: "Q3 2026", createdAt: now4() },
     { title: "Team Workspaces", description: "Collaborate with your team \u2014 shared collections, annotation, and real-time co-research.", category: "feature", status: "planned", priority: 1, votes: 1204, quarter: "Q4 2026", createdAt: now4() },
@@ -40088,7 +39426,7 @@ async function seedSystem() {
     { title: "Perplexity/ChatGPT Import", description: "One-click import of your conversation history from other AI tools.", category: "feature", status: "planned", priority: 3, votes: 94, quarter: "Q4 2026", createdAt: now4() },
     { title: "Real-time Collaboration", description: "Multiple users in the same research thread simultaneously.", category: "feature", status: "planned", priority: 2, votes: 445, quarter: "Q1 2027", createdAt: now4() }
   ]).run();
-  db.insert(adCampaigns).values([
+  await db.insert(adCampaigns).values([
     {
       name: "Launch \u2014 Twitter A",
       channel: "twitter",
@@ -40161,7 +39499,7 @@ async function seedSystem() {
       createdAt: now4()
     }
   ]).run();
-  db.insert(emailSequences).values([
+  await db.insert(emailSequences).values([
     // Onboarding sequence
     {
       name: "Onboarding \u2014 Day 0",
@@ -40319,13 +39657,13 @@ That's the goal.`, hashtags: JSON.stringify(["#productivity", "#AI"]), status: "
     { platform: "reddit", content: "Built Covelligent after getting frustrated with AI search that gives confident wrong answers with no sources. Six months later, here's what we've learned:\n\n1. Citation quality matters more than answer fluency\n2. Conversation context is everything \u2014 most tools lose it after 2 exchanges\n3. Multi-model beats single-model for complex queries\n\nWe're 1,200+ Pro users in. Happy to answer questions about the product or the build.", hashtags: JSON.stringify([]), status: "queued", scheduledFor: new Date(Date.now() + 5 * 864e5).toISOString() }
   ];
   for (const post of posts) {
-    db.insert(socialPosts).values({
+    await db.insert(socialPosts).values({
       ...post,
       generatedBy: "system",
       createdAt: now4()
     }).run();
   }
-  db.insert(abTests).values([
+  await db.insert(abTests).values([
     {
       name: "Hero CTA Copy",
       description: "Test two hero CTA button labels against each other",
@@ -40363,7 +39701,7 @@ That's the goal.`, hashtags: JSON.stringify(["#productivity", "#AI"]), status: "
     const base = 1200 + (13 - i) * 85;
     const date = daysAgo(i);
     try {
-      db.insert(growthMetrics).values({
+      await db.insert(growthMetrics).values({
         date,
         dau: base + Math.floor(Math.random() * 120 - 60),
         mau: 8400 + (13 - i) * 220,
@@ -40378,7 +39716,7 @@ That's the goal.`, hashtags: JSON.stringify(["#productivity", "#AI"]), status: "
     } catch {
     }
   }
-  db.insert(systemLogs).values([
+  await db.insert(systemLogs).values([
     { level: "success", source: "version_engine", message: "v1.0.0 'Harbour' deployed to production", createdAt: now4() },
     { level: "info", source: "marketing_engine", message: "Generated 6 social posts for the launch queue", createdAt: now4() },
     { level: "info", source: "analytics", message: "Growth metrics seeded for 14-day baseline", createdAt: now4() },
@@ -40412,52 +39750,68 @@ init_db2();
 init_schema();
 init_drizzle_orm();
 var DatabaseStorage = class {
-  getUser(id) {
-    return db.select().from(users).where(eq(users.id, id)).get();
+  // Users
+  async getUser(id) {
+    const rows = await db.select().from(users).where(eq(users.id, id));
+    return rows[0];
   }
-  getUserByEmail(email) {
-    return db.select().from(users).where(eq(users.email, email)).get();
+  async getUserByEmail(email) {
+    const rows = await db.select().from(users).where(eq(users.email, email));
+    return rows[0];
   }
-  createUser(user) {
-    return db.insert(users).values(user).returning().get();
+  async createUser(user) {
+    const rows = await db.insert(users).values(user).returning();
+    return rows[0];
   }
-  updateUserPlan(id, plan) {
-    return db.update(users).set({ plan }).where(eq(users.id, id)).returning().get();
+  async updateUserPlan(id, plan) {
+    const rows = await db.update(users).set({ plan }).where(eq(users.id, id)).returning();
+    return rows[0];
   }
-  getSubscription(userId) {
-    return db.select().from(subscriptions).where(eq(subscriptions.userId, userId)).get();
+  // Subscriptions
+  async getSubscription(userId) {
+    const rows = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId));
+    return rows[0];
   }
-  upsertSubscription(data) {
-    const existing = this.getSubscription(data.userId);
+  async upsertSubscription(data) {
+    const existing = await this.getSubscription(data.userId);
     if (existing) {
-      return db.update(subscriptions).set(data).where(eq(subscriptions.userId, data.userId)).returning().get();
+      const rows2 = await db.update(subscriptions).set(data).where(eq(subscriptions.userId, data.userId)).returning();
+      return rows2[0];
     }
-    return db.insert(subscriptions).values(data).returning().get();
+    const rows = await db.insert(subscriptions).values(data).returning();
+    return rows[0];
   }
-  getConversations(userId) {
-    return db.select().from(conversations).where(eq(conversations.userId, userId)).orderBy(desc(conversations.createdAt)).all();
+  // Conversations
+  async getConversations(userId) {
+    return db.select().from(conversations).where(eq(conversations.userId, userId)).orderBy(desc(conversations.createdAt));
   }
-  getConversation(id) {
-    return db.select().from(conversations).where(eq(conversations.id, id)).get();
+  async getConversation(id) {
+    const rows = await db.select().from(conversations).where(eq(conversations.id, id));
+    return rows[0];
   }
-  createConversation(conv) {
-    return db.insert(conversations).values(conv).returning().get();
+  async createConversation(conv) {
+    const rows = await db.insert(conversations).values(conv).returning();
+    return rows[0];
   }
-  deleteConversation(id) {
-    db.delete(messages).where(eq(messages.conversationId, id)).run();
-    db.delete(conversations).where(eq(conversations.id, id)).run();
+  async deleteConversation(id) {
+    await db.delete(messages).where(eq(messages.conversationId, id));
+    await db.delete(conversations).where(eq(conversations.id, id));
   }
-  getMessages(conversationId) {
-    return db.select().from(messages).where(eq(messages.conversationId, conversationId)).orderBy(messages.createdAt).all();
+  // Messages
+  async getMessages(conversationId) {
+    return db.select().from(messages).where(eq(messages.conversationId, conversationId)).orderBy(messages.createdAt);
   }
-  createMessage(msg) {
-    return db.insert(messages).values(msg).returning().get();
+  async createMessage(msg) {
+    const rows = await db.insert(messages).values(msg).returning();
+    return rows[0];
   }
-  getRecentSearches(userId, limit = 10) {
-    return db.select().from(searches).where(eq(searches.userId, userId)).orderBy(desc(searches.createdAt)).limit(limit).all();
+  // Searches
+  async getRecentSearches(userId, limit = 10) {
+    return db.select().from(searches).where(eq(searches.userId, userId)).orderBy(desc(searches.createdAt)).limit(limit);
   }
-  createSearch(search) {
-    return db.insert(searches).values(search).returning().get();
+  async createSearch(search) {
+    const rows = await db.insert(searches).values(search).returning();
+    return rows[0];
   }
 };
 var storage = new DatabaseStorage();
@@ -40703,7 +40057,7 @@ var HttpClient = class _HttpClient {
   getClientName() {
     throw new Error("getClientName not implemented.");
   }
-  makeRequest(host, port, path3, method, headers, requestData, protocol, timeout) {
+  makeRequest(host, port, path2, method, headers, requestData, protocol, timeout) {
     throw new Error("makeRequest not implemented.");
   }
   /** Helper to make a consistent timeout error across implementations. */
@@ -40977,11 +40331,11 @@ function dateTimeReplacer(key, value) {
 function jsonStringifyRequestData(data) {
   return JSON.stringify(data, dateTimeReplacer);
 }
-function getAPIMode(path3) {
-  if (!path3) {
+function getAPIMode(path2) {
+  if (!path2) {
     return "v1";
   }
-  return path3.startsWith("/v2") ? "v2" : "v1";
+  return path2.startsWith("/v2") ? "v2" : "v1";
 }
 function parseHttpHeaderAsString(header) {
   if (Array.isArray(header)) {
@@ -41272,7 +40626,7 @@ var RequestSender = class _RequestSender {
       }
     }
   }
-  _rawRequest(method, path3, params, options, usage) {
+  _rawRequest(method, path2, params, options, usage) {
     return new Promise((resolve, reject) => {
       try {
         const requestMethod = method.toUpperCase();
@@ -41286,7 +40640,7 @@ var RequestSender = class _RequestSender {
         }
         const apiBase = processed.apiBase || (options?.apiBase ?? null);
         const host = apiBase ? this._stripe.resolveBaseAddress(apiBase) : null;
-        this._request(requestMethod, host, path3, data, processed.authenticator, {
+        this._request(requestMethod, host, path2, data, processed.authenticator, {
           headers: processed.headers,
           settings: processed.settings,
           streaming: processed.streaming
@@ -41308,10 +40662,10 @@ var RequestSender = class _RequestSender {
   /**
    * This is the main HTTP method that all resources eventually call
    */
-  _request(method, host, path3, data, authenticator, options, usage = [], callback, requestDataProcessor = null) {
+  _request(method, host, path2, data, authenticator, options, usage = [], callback, requestDataProcessor = null) {
     let requestData;
     authenticator = authenticator ?? this._stripe._authenticator;
-    const apiMode = getAPIMode(path3);
+    const apiMode = getAPIMode(path2);
     const retryRequest = (requestFn, apiVersion, headers, requestRetries, retryAfter) => {
       return setTimeout(requestFn, this._getSleepTimeInMS(requestRetries, retryAfter), apiVersion, headers, requestRetries + 1);
     };
@@ -41320,7 +40674,7 @@ var RequestSender = class _RequestSender {
       const request = {
         host: host || this._stripe.getApiField("host"),
         port: this._stripe.getApiField("port"),
-        path: path3,
+        path: path2,
         method,
         headers: Object.assign({}, headers),
         body: requestData,
@@ -41337,7 +40691,7 @@ var RequestSender = class _RequestSender {
           account: parseHttpHeaderAsString(headers["Stripe-Account"]),
           idempotency_key: parseHttpHeaderAsString(headers["Idempotency-Key"]),
           method,
-          path: path3,
+          path: path2,
           body: this._stripe.getEmitEventBodiesEnabled() ? data ?? void 0 : void 0,
           request_start_time: requestStartTime
         });
@@ -42194,14 +41548,14 @@ var coerceV2ResponseData = (data, schema) => {
 
 // node_modules/stripe/esm/autoPagination.js
 var V1Iterator = class {
-  constructor(firstPagePromise, params, options, method, path3, spec, stripeResource) {
+  constructor(firstPagePromise, params, options, method, path2, spec, stripeResource) {
     this.index = 0;
     this.pagePromise = firstPagePromise;
     this.promiseCache = { currentPromise: null };
     this.params = params;
     this.options = options;
     this.method = method;
-    this.path = path3;
+    this.path = path2;
     this.spec = spec;
     this.stripeResource = stripeResource;
   }
@@ -42326,14 +41680,14 @@ var V2ListIterator = class {
     return nextPromise;
   }
 };
-var makeAutoPaginationMethods = (stripeResource, params, options, method, path3, spec, firstPagePromise) => {
-  const apiMode = getAPIMode(path3);
+var makeAutoPaginationMethods = (stripeResource, params, options, method, path2, spec, firstPagePromise) => {
+  const apiMode = getAPIMode(path2);
   const methodType = spec?.methodType;
   if (apiMode !== "v2" && methodType === "search") {
-    return makeAutoPaginationMethodsFromIterator(new V1SearchIterator(firstPagePromise, params, options, method, path3, spec, stripeResource));
+    return makeAutoPaginationMethodsFromIterator(new V1SearchIterator(firstPagePromise, params, options, method, path2, spec, stripeResource));
   }
   if (apiMode !== "v2" && methodType === "list") {
-    return makeAutoPaginationMethodsFromIterator(new V1ListIterator(firstPagePromise, params, options, method, path3, spec, stripeResource));
+    return makeAutoPaginationMethodsFromIterator(new V1ListIterator(firstPagePromise, params, options, method, path2, spec, stripeResource));
   }
   if (apiMode === "v2" && methodType === "list") {
     return makeAutoPaginationMethodsFromIterator(new V2ListIterator(firstPagePromise, options, spec, stripeResource));
@@ -42496,7 +41850,7 @@ var StripeResource = class {
   }
   initialize(_stripe, _deprecatedUrlData) {
   }
-  _makeRequest(method, path3, params, options, spec) {
+  _makeRequest(method, path2, params, options, spec) {
     const requestMethod = method.toUpperCase();
     const encode = spec?.encode || ((data2) => data2);
     const data = encode(params ? { ...params } : {});
@@ -42538,7 +41892,7 @@ var StripeResource = class {
       }
       const emptyQuery = Object.keys(queryData).length === 0;
       const fullPath = [
-        path3,
+        path2,
         emptyQuery ? "" : "?",
         queryStringifyRequestData(queryData)
       ].join("");
@@ -42549,7 +41903,7 @@ var StripeResource = class {
       }, usage, requestCallback, this.requestDataProcessor?.bind(this));
     });
     if (spec?.methodType) {
-      Object.assign(innerPromise, makeAutoPaginationMethods(this, params ? { ...params } : {}, options, requestMethod, path3, spec, innerPromise));
+      Object.assign(innerPromise, makeAutoPaginationMethods(this, params ? { ...params } : {}, options, requestMethod, path2, spec, innerPromise));
     }
     return innerPromise;
   }
@@ -42684,7 +42038,7 @@ var NodeHttpClient = class extends HttpClient {
   getClientName() {
     return "node";
   }
-  makeRequest(host, port, path3, method, headers, requestData, protocol, timeout) {
+  makeRequest(host, port, path2, method, headers, requestData, protocol, timeout) {
     const isInsecureConnection = protocol === "http";
     let agent = this._agent;
     if (!agent) {
@@ -42694,7 +42048,7 @@ var NodeHttpClient = class extends HttpClient {
       const req = (isInsecureConnection ? http : https).request({
         host,
         port,
-        path: path3,
+        path: path2,
         method,
         agent,
         headers,
@@ -42819,12 +42173,12 @@ var FetchHttpClient = class _FetchHttpClient extends HttpClient {
   getClientName() {
     return "fetch";
   }
-  async makeRequest(host, port, path3, method, headers, requestData, protocol, timeout) {
+  async makeRequest(host, port, path2, method, headers, requestData, protocol, timeout) {
     const isInsecureConnection = protocol === "http";
-    if (!path3.startsWith("/")) {
-      throw new Error(`Only relative paths are supported, got: "${path3}"`);
+    if (!path2.startsWith("/")) {
+      throw new Error(`Only relative paths are supported, got: "${path2}"`);
     }
-    const url = new URL(`${isInsecureConnection ? "http" : "https"}://${host}${path3}`);
+    const url = new URL(`${isInsecureConnection ? "http" : "https"}://${host}${path2}`);
     url.port = port;
     const methodHasPayload = method == "POST" || method == "PUT" || method == "PATCH";
     const body = requestData || (methodHasPayload ? "" : void 0);
@@ -52760,9 +52114,9 @@ var OAuthResource = class extends StripeResource {
   authorizeUrl(params, options) {
     params = params || {};
     options = options || {};
-    let path3 = "oauth/authorize";
+    let path2 = "oauth/authorize";
     if (options.express) {
-      path3 = `express/${path3}`;
+      path2 = `express/${path2}`;
     }
     if (!params.response_type) {
       params.response_type = "code";
@@ -52774,7 +52128,7 @@ var OAuthResource = class extends StripeResource {
       params.scope = "read_write";
     }
     const connectHost = this._stripe.resolveBaseAddress("connect");
-    return `https://${connectHost}/${path3}?${queryStringifyRequestData(params)}`;
+    return `https://${connectHost}/${path2}?${queryStringifyRequestData(params)}`;
   }
   token(params, options) {
     return this._makeRequest("POST", "/oauth/token", params, options, {
@@ -57657,8 +57011,8 @@ var Stripe = class _Stripe {
    * @param params - The parameters to include in the request body.
    * @param options - Additional request options.
    */
-  rawRequest(method, path3, params, options) {
-    return this._requestSender._rawRequest(method, path3, params, options);
+  rawRequest(method, path2, params, options) {
+    return this._requestSender._rawRequest(method, path2, params, options);
   }
   /**
    * @private
@@ -57785,9 +57139,9 @@ var Stripe = class _Stripe {
     } else {
       delete userAgent.platform;
     }
-    const client = this.getApiField("httpClient");
-    if (client) {
-      userAgent.httplib = encodeURIComponent(client.getClientName());
+    const client2 = this.getApiField("httpClient");
+    if (client2) {
+      userAgent.httplib = encodeURIComponent(client2.getClientName());
     }
     if (this._appInfo) {
       userAgent.application = this._appInfo;
@@ -58108,10 +57462,10 @@ I'll continue searching for more specific details if you'd like to dive deeper i
   return responses[Math.floor(Math.random() * responses.length)];
 }
 async function registerRoutes(httpServer2, app2) {
-  app2.get("/api/demo-user", (req, res) => {
-    let user = storage.getUserByEmail("demo@covelligent.com");
+  app2.get("/api/demo-user", async (req, res) => {
+    let user = await storage.getUserByEmail("demo@covelligent.com");
     if (!user) {
-      user = storage.createUser({
+      user = await storage.createUser({
         name: "Alex Rivera",
         email: "demo@covelligent.com",
         plan: "pro",
@@ -58120,48 +57474,48 @@ async function registerRoutes(httpServer2, app2) {
     }
     res.json(user);
   });
-  app2.get("/api/users/:id", (req, res) => {
-    const user = storage.getUser(Number(req.params.id));
+  app2.get("/api/users/:id", async (req, res) => {
+    const user = await storage.getUser(Number(req.params.id));
     if (!user) return res.status(404).json({ message: "User not found" });
     res.json(user);
   });
-  app2.post("/api/users", (req, res) => {
+  app2.post("/api/users", async (req, res) => {
     const parsed = insertUserSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: parsed.error.message });
-    res.status(201).json(storage.createUser(parsed.data));
+    res.status(201).json(await storage.createUser(parsed.data));
   });
-  app2.patch("/api/users/:id/plan", (req, res) => {
+  app2.patch("/api/users/:id/plan", async (req, res) => {
     const { plan } = req.body;
     if (!["free", "pro"].includes(plan)) return res.status(400).json({ message: "Invalid plan" });
-    const user = storage.updateUserPlan(Number(req.params.id), plan);
+    const user = await storage.updateUserPlan(Number(req.params.id), plan);
     if (!user) return res.status(404).json({ message: "User not found" });
     res.json(user);
   });
-  app2.get("/api/users/:userId/conversations", (req, res) => {
-    res.json(storage.getConversations(Number(req.params.userId)));
+  app2.get("/api/users/:userId/conversations", async (req, res) => {
+    res.json(await storage.getConversations(Number(req.params.userId)));
   });
-  app2.post("/api/conversations", (req, res) => {
+  app2.post("/api/conversations", async (req, res) => {
     const parsed = insertConversationSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: parsed.error.message });
-    res.status(201).json(storage.createConversation(parsed.data));
+    res.status(201).json(await storage.createConversation(parsed.data));
   });
-  app2.get("/api/conversations/:id", (req, res) => {
-    const conv = storage.getConversation(Number(req.params.id));
+  app2.get("/api/conversations/:id", async (req, res) => {
+    const conv = await storage.getConversation(Number(req.params.id));
     if (!conv) return res.status(404).json({ message: "Not found" });
     res.json(conv);
   });
-  app2.delete("/api/conversations/:id", (req, res) => {
-    storage.deleteConversation(Number(req.params.id));
+  app2.delete("/api/conversations/:id", async (req, res) => {
+    await storage.deleteConversation(Number(req.params.id));
     res.json({ success: true });
   });
-  app2.get("/api/conversations/:id/messages", (req, res) => {
-    res.json(storage.getMessages(Number(req.params.id)));
+  app2.get("/api/conversations/:id/messages", async (req, res) => {
+    res.json(await storage.getMessages(Number(req.params.id)));
   });
-  app2.post("/api/conversations/:id/messages", (req, res) => {
+  app2.post("/api/conversations/:id/messages", async (req, res) => {
     const convId = Number(req.params.id);
-    const conv = storage.getConversation(convId);
+    const conv = await storage.getConversation(convId);
     if (!conv) return res.status(404).json({ message: "Conversation not found" });
-    storage.createMessage({
+    await storage.createMessage({
       conversationId: convId,
       role: "user",
       content: req.body.content,
@@ -58169,7 +57523,7 @@ async function registerRoutes(httpServer2, app2) {
       createdAt: (/* @__PURE__ */ new Date()).toISOString()
     });
     const aiResponse = generateAIResponse(req.body.content);
-    const assistantMsg = storage.createMessage({
+    const assistantMsg = await storage.createMessage({
       conversationId: convId,
       role: "assistant",
       content: aiResponse.content,
@@ -58179,20 +57533,20 @@ async function registerRoutes(httpServer2, app2) {
     trackEvent("message_sent", { properties: { convId } });
     res.status(201).json({ assistantMessage: assistantMsg });
   });
-  app2.post("/api/search", (req, res) => {
+  app2.post("/api/search", async (req, res) => {
     const { query, userId } = req.body;
     if (!query) return res.status(400).json({ message: "Query required" });
     if (userId) {
-      storage.createSearch({ userId, query, createdAt: (/* @__PURE__ */ new Date()).toISOString() });
+      await storage.createSearch({ userId, query, createdAt: (/* @__PURE__ */ new Date()).toISOString() });
     }
-    const conv = storage.createConversation({
+    const conv = await storage.createConversation({
       userId: userId || 1,
       title: query.length > 60 ? query.slice(0, 60) + "..." : query,
       createdAt: (/* @__PURE__ */ new Date()).toISOString()
     });
-    storage.createMessage({ conversationId: conv.id, role: "user", content: query, sources: null, createdAt: (/* @__PURE__ */ new Date()).toISOString() });
+    await storage.createMessage({ conversationId: conv.id, role: "user", content: query, sources: null, createdAt: (/* @__PURE__ */ new Date()).toISOString() });
     const aiResponse = generateAIResponse(query);
-    const assistantMsg = storage.createMessage({
+    const assistantMsg = await storage.createMessage({
       conversationId: conv.id,
       role: "assistant",
       content: aiResponse.content,
@@ -58202,16 +57556,16 @@ async function registerRoutes(httpServer2, app2) {
     trackEvent("search", { userId, properties: { query: query.slice(0, 60) } });
     res.json({ conversation: conv, answer: assistantMsg });
   });
-  app2.get("/api/users/:userId/searches", (req, res) => {
-    res.json(storage.getRecentSearches(Number(req.params.userId)));
+  app2.get("/api/users/:userId/searches", async (req, res) => {
+    res.json(await storage.getRecentSearches(Number(req.params.userId)));
   });
-  app2.get("/api/admin/versions", (_req, res) => {
+  app2.get("/api/admin/versions", async (_req, res) => {
     res.json(getAllVersions());
   });
-  app2.get("/api/admin/versions/current", (_req, res) => {
+  app2.get("/api/admin/versions/current", async (_req, res) => {
     res.json(getCurrentVersion());
   });
-  app2.post("/api/admin/versions/:id/promote", (req, res) => {
+  app2.post("/api/admin/versions/:id/promote", async (req, res) => {
     promoteVersion(Number(req.params.id));
     res.json({ success: true });
   });
@@ -58219,30 +57573,30 @@ async function registerRoutes(httpServer2, app2) {
     const draft = autoVersionBump();
     res.json(draft ?? { message: "No new shipped items to bump" });
   });
-  app2.get("/api/admin/feature-flags", (_req, res) => {
+  app2.get("/api/admin/feature-flags", async (_req, res) => {
     res.json(getFeatureFlags());
   });
-  app2.patch("/api/admin/feature-flags/:key", (req, res) => {
+  app2.patch("/api/admin/feature-flags/:key", async (req, res) => {
     const { enabled, rolloutPct } = req.body;
     if (typeof enabled === "boolean") toggleFeatureFlag(req.params.key, enabled);
     if (typeof rolloutPct === "number") setRolloutPct(req.params.key, rolloutPct);
     res.json({ success: true });
   });
-  app2.get("/api/admin/roadmap", (_req, res) => {
+  app2.get("/api/admin/roadmap", async (_req, res) => {
     res.json(getRoadmap());
   });
-  app2.patch("/api/admin/roadmap/:id/status", (req, res) => {
+  app2.patch("/api/admin/roadmap/:id/status", async (req, res) => {
     advanceRoadmapItem(Number(req.params.id), req.body.status);
     res.json({ success: true });
   });
-  app2.post("/api/admin/roadmap/:id/vote", (req, res) => {
+  app2.post("/api/admin/roadmap/:id/vote", async (req, res) => {
     voteRoadmapItem(Number(req.params.id));
     res.json({ success: true });
   });
-  app2.get("/api/admin/campaigns", (_req, res) => {
+  app2.get("/api/admin/campaigns", async (_req, res) => {
     res.json(getCampaigns());
   });
-  app2.post("/api/admin/campaigns/:id/generate-variant", (req, res) => {
+  app2.post("/api/admin/campaigns/:id/generate-variant", async (req, res) => {
     const variant = generateAdVariant(Number(req.params.id));
     if (!variant) return res.status(404).json({ message: "Campaign not found" });
     res.json(variant);
@@ -58251,7 +57605,7 @@ async function registerRoutes(httpServer2, app2) {
     const count = autoPauseUnderperformers();
     res.json({ paused: count });
   });
-  app2.get("/api/admin/social-posts", (_req, res) => {
+  app2.get("/api/admin/social-posts", async (_req, res) => {
     res.json(getSocialPosts());
   });
   app2.post("/api/admin/social-posts/generate-weekly", (_req, res) => {
@@ -58262,51 +57616,51 @@ async function registerRoutes(httpServer2, app2) {
     const count = processScheduledPosts();
     res.json({ processed: count });
   });
-  app2.get("/api/admin/email-sequences", (_req, res) => {
+  app2.get("/api/admin/email-sequences", async (_req, res) => {
     res.json(getEmailSequences());
   });
-  app2.get("/api/admin/ab-tests", (_req, res) => {
+  app2.get("/api/admin/ab-tests", async (_req, res) => {
     res.json(getAbTests());
   });
   app2.post("/api/admin/ab-tests/analyze", (_req, res) => {
     const concluded = analyzeAbTests();
     res.json({ concluded });
   });
-  app2.get("/api/admin/analytics/growth", (req, res) => {
+  app2.get("/api/admin/analytics/growth", async (req, res) => {
     const days = Number(req.query.days) || 14;
     res.json(getGrowthMetrics(days));
   });
-  app2.get("/api/admin/analytics/kpis", (_req, res) => {
+  app2.get("/api/admin/analytics/kpis", async (_req, res) => {
     res.json(getGrowthKPIs());
   });
-  app2.get("/api/admin/analytics/funnel", (_req, res) => {
+  app2.get("/api/admin/analytics/funnel", async (_req, res) => {
     res.json(getFunnelMetrics());
   });
-  app2.get("/api/admin/analytics/churn-risk", (_req, res) => {
+  app2.get("/api/admin/analytics/churn-risk", async (_req, res) => {
     res.json(getChurnRiskUsers());
   });
-  app2.get("/api/admin/analytics/events", (_req, res) => {
+  app2.get("/api/admin/analytics/events", async (_req, res) => {
     res.json(getRecentEvents(100));
   });
   app2.post("/api/admin/analytics/compute-daily", (_req, res) => {
     computeDailyMetrics();
     res.json({ success: true });
   });
-  app2.get("/api/admin/system/health", (_req, res) => {
+  app2.get("/api/admin/system/health", async (_req, res) => {
     res.json(getSystemHealth());
   });
-  app2.get("/api/admin/system/logs", (req, res) => {
+  app2.get("/api/admin/system/logs", async (req, res) => {
     const limit = Number(req.query.limit) || 50;
     const logs = db.select().from(systemLogs).orderBy(desc(systemLogs.createdAt)).limit(limit).all();
     res.json(logs);
   });
-  app2.post("/api/track", (req, res) => {
+  app2.post("/api/track", async (req, res) => {
     const { event, page, userId, sessionId, referrer, properties } = req.body;
     if (!event) return res.status(400).json({ message: "event required" });
     trackEvent(event, { page, userId, sessionId, referrer, properties });
     res.json({ ok: true });
   });
-  app2.get("/api/health", (_req, res) => {
+  app2.get("/api/health", async (_req, res) => {
     res.json({ status: "ok", version: "1.0.0", uptime: process.uptime() });
   });
   app2.post("/api/admin/login", adminLogin);
@@ -58317,12 +57671,15 @@ async function registerRoutes(httpServer2, app2) {
   app2.post("/api/stripe/webhook", handleWebhook);
   app2.post("/api/stripe/checkout", createCheckoutSession);
   app2.post("/api/stripe/portal", createPortalSession);
-  app2.get("/api/users/:id/subscription", (req, res) => {
-    const sub = storage.getSubscription(Number(req.params.id));
+  app2.get("/api/users/:id/subscription", async (req, res) => {
+    const sub = await storage.getSubscription(Number(req.params.id));
     res.json(sub || { status: "inactive", plan: "free" });
   });
   return httpServer2;
 }
+
+// server/index.ts
+init_db2();
 
 // server/static.ts
 var import_express = __toESM(require_express2(), 1);
@@ -58364,7 +57721,7 @@ function log4(message, source = "express") {
 }
 app.use((req, res, next) => {
   const start = Date.now();
-  const path3 = req.path;
+  const path2 = req.path;
   let capturedJsonResponse = void 0;
   const originalResJson = res.json;
   res.json = function(bodyJson, ...args) {
@@ -58373,8 +57730,8 @@ app.use((req, res, next) => {
   };
   res.on("finish", () => {
     const duration = Date.now() - start;
-    if (path3.startsWith("/api")) {
-      let logLine = `${req.method} ${path3} ${res.statusCode} in ${duration}ms`;
+    if (path2.startsWith("/api")) {
+      let logLine = `${req.method} ${path2} ${res.statusCode} in ${duration}ms`;
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
@@ -58384,6 +57741,7 @@ app.use((req, res, next) => {
   next();
 });
 (async () => {
+  await initDb();
   const { seedSystem: seedSystem2 } = await Promise.resolve().then(() => (init_seed(), seed_exports));
   seedSystem2();
   const { computeDailyMetrics: computeDailyMetrics2 } = await Promise.resolve().then(() => (init_analytics_engine(), analytics_engine_exports));

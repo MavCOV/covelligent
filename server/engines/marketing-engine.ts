@@ -12,8 +12,8 @@ import { eq, desc, and, sql } from "drizzle-orm";
 
 const now = () => new Date().toISOString();
 
-function log(level: string, message: string, data?: object) {
-  db.insert(systemLogs).values({
+async function log(level: string, message: string, data?: object) {
+  await db.insert(systemLogs).values({
     level, source: "marketing_engine", message,
     data: data ? JSON.stringify(data) : null,
     createdAt: now(),
@@ -22,39 +22,39 @@ function log(level: string, message: string, data?: object) {
 
 // ─── Campaign Management ──────────────────────────────────────────────────────
 
-export function getCampaigns() {
-  return db.select().from(adCampaigns).orderBy(desc(adCampaigns.createdAt)).all();
+export async function getCampaigns() {
+  return await db.select().from(adCampaigns).orderBy(desc(adCampaigns.createdAt)).all();
 }
 
-export function getActiveCampaigns(channel?: string) {
-  const q = db.select().from(adCampaigns).where(eq(adCampaigns.status, "active"));
+export async function getActiveCampaigns(channel?: string) {
+  const q = await db.select().from(adCampaigns).where(eq(adCampaigns.status, "active"));
   return q.all().filter(c => !channel || c.channel === channel);
 }
 
-export function recordImpression(campaignId: number) {
-  db.update(adCampaigns)
+export async function recordImpression(campaignId: number) {
+  await db.update(adCampaigns)
     .set({ impressions: sql`impressions + 1` })
     .where(eq(adCampaigns.id, campaignId))
     .run();
 }
 
-export function recordClick(campaignId: number) {
-  db.update(adCampaigns)
+export async function recordClick(campaignId: number) {
+  await db.update(adCampaigns)
     .set({ clicks: sql`clicks + 1` })
     .where(eq(adCampaigns.id, campaignId))
     .run();
 }
 
-export function recordConversion(campaignId: number) {
-  db.update(adCampaigns)
+export async function recordConversion(campaignId: number) {
+  await db.update(adCampaigns)
     .set({ conversions: sql`conversions + 1` })
     .where(eq(adCampaigns.id, campaignId))
     .run();
 }
 
 /** Auto-generate new ad copy variants based on top performers */
-export function generateAdVariant(baseCampaignId: number): typeof adCampaigns.$inferSelect | null {
-  const base = db.select().from(adCampaigns).where(eq(adCampaigns.id, baseCampaignId)).get();
+export async function generateAdVariant(baseCampaignId: number): typeof adCampaigns.$inferSelect | null {
+  const base = await db.select().from(adCampaigns).where(eq(adCampaigns.id, baseCampaignId)).get();
   if (!base) return null;
 
   const ctr = base.impressions > 0 ? (base.clicks / base.impressions) : 0;
@@ -82,7 +82,7 @@ export function generateAdVariant(baseCampaignId: number): typeof adCampaigns.$i
   const variantData = variants[Math.floor(Math.random() * variants.length)];
   const newVariantGroup = `${base.variantGroup || "auto"}-${Date.now().toString(36)}`;
 
-  const created = db.insert(adCampaigns).values({
+  const created = await db.insert(adCampaigns).values({
     name: `${base.name} [Auto-Variant]`,
     channel: base.channel,
     headline: variantData.headline,
@@ -107,8 +107,8 @@ export function generateAdVariant(baseCampaignId: number): typeof adCampaigns.$i
 }
 
 /** Auto-pause campaigns with CTR below threshold */
-export function autoPauseUnderperformers(minImpressions = 500, minCTR = 0.02) {
-  const campaigns = db.select().from(adCampaigns)
+export async function autoPauseUnderperformers(minImpressions = 500, minCTR = 0.02) {
+  const campaigns = await db.select().from(adCampaigns)
     .where(eq(adCampaigns.status, "active"))
     .all();
 
@@ -117,7 +117,7 @@ export function autoPauseUnderperformers(minImpressions = 500, minCTR = 0.02) {
     if (c.impressions < minImpressions) continue;
     const ctr = c.clicks / c.impressions;
     if (ctr < minCTR) {
-      db.update(adCampaigns).set({ status: "paused" }).where(eq(adCampaigns.id, c.id)).run();
+      await db.update(adCampaigns).set({ status: "paused" }).where(eq(adCampaigns.id, c.id)).run();
       paused++;
       log("warn", `Auto-paused campaign #${c.id} '${c.name}' — CTR ${(ctr * 100).toFixed(2)}% below ${(minCTR * 100)}% threshold`);
     }
@@ -128,13 +128,13 @@ export function autoPauseUnderperformers(minImpressions = 500, minCTR = 0.02) {
 }
 
 /** Schedule a social post for a specific time */
-export function scheduleSocialPost(
+export async function scheduleSocialPost(
   platform: string,
   content: string,
   hashtags: string[],
   scheduledFor: Date
 ) {
-  return db.insert(socialPosts).values({
+  return await db.insert(socialPosts).values({
     platform,
     content,
     hashtags: JSON.stringify(hashtags),
@@ -146,15 +146,15 @@ export function scheduleSocialPost(
 }
 
 /** Mark queued posts as "posted" if their scheduledFor has passed */
-export function processScheduledPosts() {
+export async function processScheduledPosts() {
   const now_ts = new Date().toISOString();
-  const due = db.select().from(socialPosts)
+  const due = await db.select().from(socialPosts)
     .where(eq(socialPosts.status, "queued"))
     .all()
     .filter(p => p.scheduledFor && p.scheduledFor <= now_ts);
 
   for (const post of due) {
-    db.update(socialPosts)
+    await db.update(socialPosts)
       .set({ status: "posted", postedAt: now() })
       .where(eq(socialPosts.id, post.id))
       .run();
@@ -164,12 +164,12 @@ export function processScheduledPosts() {
 }
 
 /** Get all social posts */
-export function getSocialPosts() {
-  return db.select().from(socialPosts).orderBy(desc(socialPosts.createdAt)).all();
+export async function getSocialPosts() {
+  return await db.select().from(socialPosts).orderBy(desc(socialPosts.createdAt)).all();
 }
 
 /** Auto-generate next week's social content based on feature flags / roadmap */
-export function generateWeeklySocialContent(): string[] {
+export async function generateWeeklySocialContent(): string[] {
   const templates = [
     { platform: "twitter", content: "This week in Covelligent: we've shipped improvements to citation ranking and answer depth. Ask a complex question today — the difference is noticeable.", hashtags: ["#AI", "#Covelligent", "#Update"] },
     { platform: "twitter", content: "Reminder: Covelligent Pro includes API access. If you're building on top of AI search, we're a great foundation. Documentation is live.", hashtags: ["#AI", "#API", "#Developers"] },
@@ -193,13 +193,13 @@ export function generateWeeklySocialContent(): string[] {
 
 // ─── A/B Tests ────────────────────────────────────────────────────────────────
 
-export function getAbTests() {
-  return db.select().from(abTests).orderBy(desc(abTests.startedAt)).all();
+export async function getAbTests() {
+  return await db.select().from(abTests).orderBy(desc(abTests.startedAt)).all();
 }
 
 /** Analyze A/B tests and auto-conclude winners */
-export function analyzeAbTests() {
-  const running = db.select().from(abTests).where(eq(abTests.status, "running")).all();
+export async function analyzeAbTests() {
+  const running = await db.select().from(abTests).where(eq(abTests.status, "running")).all();
   const concluded: string[] = [];
 
   for (const test of running) {
@@ -220,7 +220,7 @@ export function analyzeAbTests() {
 
     // Only conclude if winner is >15% better
     if (winnerRate > runnerRate * 1.15) {
-      db.update(abTests).set({
+      await db.update(abTests).set({
         status: "concluded",
         winner: winner.variantId,
         concludedAt: now(),
@@ -236,12 +236,12 @@ export function analyzeAbTests() {
 
 // ─── Email Sequences ─────────────────────────────────────────────────────────
 
-export function getEmailSequences() {
-  return db.select().from(emailSequences).orderBy(emailSequences.stepNumber).all();
+export async function getEmailSequences() {
+  return await db.select().from(emailSequences).orderBy(emailSequences.stepNumber).all();
 }
 
-export function updateEmailMetrics(id: number, openRate: number, clickRate: number, sentCount: number) {
-  db.update(emailSequences)
+export async function updateEmailMetrics(id: number, openRate: number, clickRate: number, sentCount: number) {
+  await db.update(emailSequences)
     .set({ openRate, clickRate, sentCount })
     .where(eq(emailSequences.id, id))
     .run();

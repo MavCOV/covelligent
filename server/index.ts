@@ -2,6 +2,7 @@ import "dotenv/config";
 import express, { Response, NextFunction } from 'express';
 import type { Request } from 'express';
 import { registerRoutes } from "./routes";
+import { initDb } from "./db";
 import { serveStatic } from "./static";
 import { createServer } from "node:http";
 
@@ -62,6 +63,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  await initDb();
   // Boot system engines
   const { seedSystem } = await import("./engines/seed");
   seedSystem();

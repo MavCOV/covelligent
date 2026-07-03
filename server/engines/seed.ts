@@ -15,13 +15,13 @@ const daysAgo = (n: number) => new Date(Date.now() - n * 86400000).toISOString()
 
 export async function seedSystem() {
   // Only seed if tables are empty
-  const existing = db.select().from(versions).all();
+  const existing = await db.select().from(versions).all();
   if (existing.length > 0) return;
 
   console.log("[seed] Seeding Covelligent system tables...");
 
   // ── Versions ────────────────────────────────────────────────────────────────
-  db.insert(versions).values([
+  await db.insert(versions).values([
     {
       version: "1.0.0",
       codename: "Harbour",
@@ -41,7 +41,7 @@ export async function seedSystem() {
   ]).run();
 
   // ── Feature Flags ───────────────────────────────────────────────────────────
-  db.insert(featureFlags).values([
+  await db.insert(featureFlags).values([
     { key: "deep_research_mode", label: "Deep Research Mode", description: "Multi-step agent that breaks complex queries into sub-queries", enabled: 1, rolloutPct: 100, updatedAt: now() },
     { key: "file_upload", label: "File Upload & Analysis", description: "Allow users to upload PDFs, CSVs, and images for analysis", enabled: 0, rolloutPct: 0, updatedAt: now() },
     { key: "voice_input", label: "Voice Input", description: "Speech-to-text search input via microphone", enabled: 0, rolloutPct: 0, updatedAt: now() },
@@ -53,7 +53,7 @@ export async function seedSystem() {
   ]).run();
 
   // ── Roadmap ──────────────────────────────────────────────────────────────────
-  db.insert(roadmapItems).values([
+  await db.insert(roadmapItems).values([
     { title: "File Upload & Analysis", description: "Upload PDFs, spreadsheets, and images — Covelligent analyzes and answers questions about your documents.", category: "feature", status: "in_progress", priority: 1, votes: 847, quarter: "Q3 2026", createdAt: now() },
     { title: "Voice Input", description: "Speak your query — Covelligent transcribes and searches instantly.", category: "feature", status: "planned", priority: 1, votes: 612, quarter: "Q3 2026", createdAt: now() },
     { title: "Team Workspaces", description: "Collaborate with your team — shared collections, annotation, and real-time co-research.", category: "feature", status: "planned", priority: 1, votes: 1204, quarter: "Q4 2026", createdAt: now() },
@@ -67,7 +67,7 @@ export async function seedSystem() {
   ]).run();
 
   // ── Ad Campaigns ─────────────────────────────────────────────────────────────
-  db.insert(adCampaigns).values([
+  await db.insert(adCampaigns).values([
     {
       name: "Launch — Twitter A",
       channel: "twitter",
@@ -142,7 +142,7 @@ export async function seedSystem() {
   ]).run();
 
   // ── Email Sequences ──────────────────────────────────────────────────────────
-  db.insert(emailSequences).values([
+  await db.insert(emailSequences).values([
     // Onboarding sequence
     {
       name: "Onboarding — Day 0",
@@ -239,7 +239,7 @@ export async function seedSystem() {
   ];
 
   for (const post of posts) {
-    db.insert(socialPosts).values({
+    await db.insert(socialPosts).values({
       ...post,
       generatedBy: "system",
       createdAt: now(),
@@ -247,7 +247,7 @@ export async function seedSystem() {
   }
 
   // ── A/B Tests ─────────────────────────────────────────────────────────────────
-  db.insert(abTests).values([
+  await db.insert(abTests).values([
     {
       name: "Hero CTA Copy",
       description: "Test two hero CTA button labels against each other",
@@ -287,7 +287,7 @@ export async function seedSystem() {
     const base = 1200 + (13 - i) * 85;
     const date = daysAgo(i);
     try {
-      db.insert(growthMetrics).values({
+      await db.insert(growthMetrics).values({
         date,
         dau: base + Math.floor(Math.random() * 120 - 60),
         mau: 8400 + (13 - i) * 220,
@@ -303,7 +303,7 @@ export async function seedSystem() {
   }
 
   // ── System Logs ───────────────────────────────────────────────────────────────
-  db.insert(systemLogs).values([
+  await db.insert(systemLogs).values([
     { level: "success", source: "version_engine", message: "v1.0.0 'Harbour' deployed to production", createdAt: now() },
     { level: "info", source: "marketing_engine", message: "Generated 6 social posts for the launch queue", createdAt: now() },
     { level: "info", source: "analytics", message: "Growth metrics seeded for 14-day baseline", createdAt: now() },

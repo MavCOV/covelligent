@@ -1,25 +1,22 @@
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import Database from "better-sqlite3";
+import { createClient } from "@libsql/client";
+import { drizzle } from "drizzle-orm/libsql";
 import * as schema from "@shared/schema";
-import path from "path";
 
-const dbPath = path.join(process.cwd(), "data.db");
-const sqlite = new Database(dbPath);
+const client = createClient({
+  url: process.env.DATABASE_URL || "file:./data.db",
+});
 
-sqlite.pragma("journal_mode = WAL");
-sqlite.pragma("foreign_keys = ON");
+export const db = drizzle(client, { schema });
 
-export const db = drizzle(sqlite, { schema });
-
-// ─── Bootstrap all tables ────────────────────────────────────────────────────
-sqlite.exec(`
+// Initialize all tables
+export async function initDb() {
+  await client.executeMultiple(`
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
     plan TEXT NOT NULL DEFAULT 'free',
-    avatar TEXT,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    created_at TEXT NOT NULL
   );
 
   CREATE TABLE IF NOT EXISTS conversations (
@@ -42,127 +39,6 @@ sqlite.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     query TEXT NOT NULL,
-    created_at TEXT NOT NULL
-  );
-
-  CREATE TABLE IF NOT EXISTS versions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    version TEXT NOT NULL,
-    codename TEXT,
-    release_notes TEXT NOT NULL,
-    changes TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'draft',
-    deployed_at TEXT,
-    created_at TEXT NOT NULL
-  );
-
-  CREATE TABLE IF NOT EXISTS feature_flags (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    key TEXT NOT NULL UNIQUE,
-    label TEXT NOT NULL,
-    description TEXT,
-    enabled INTEGER NOT NULL DEFAULT 0,
-    rollout_pct INTEGER NOT NULL DEFAULT 0,
-    updated_at TEXT NOT NULL
-  );
-
-  CREATE TABLE IF NOT EXISTS roadmap_items (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    description TEXT,
-    category TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'planned',
-    priority INTEGER NOT NULL DEFAULT 2,
-    votes INTEGER NOT NULL DEFAULT 0,
-    quarter TEXT,
-    created_at TEXT NOT NULL,
-    shipped_at TEXT
-  );
-
-  CREATE TABLE IF NOT EXISTS ad_campaigns (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    channel TEXT NOT NULL,
-    headline TEXT NOT NULL,
-    body TEXT NOT NULL,
-    cta TEXT NOT NULL,
-    target_audience TEXT,
-    status TEXT NOT NULL DEFAULT 'active',
-    impressions INTEGER NOT NULL DEFAULT 0,
-    clicks INTEGER NOT NULL DEFAULT 0,
-    conversions INTEGER NOT NULL DEFAULT 0,
-    variant_group TEXT,
-    created_at TEXT NOT NULL,
-    scheduled_for TEXT
-  );
-
-  CREATE TABLE IF NOT EXISTS email_sequences (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    trigger_event TEXT NOT NULL,
-    step_number INTEGER NOT NULL,
-    delay_days INTEGER NOT NULL DEFAULT 0,
-    subject TEXT NOT NULL,
-    preheader TEXT,
-    body TEXT NOT NULL,
-    cta_text TEXT,
-    cta_url TEXT,
-    active INTEGER NOT NULL DEFAULT 1,
-    sent_count INTEGER NOT NULL DEFAULT 0,
-    open_rate REAL NOT NULL DEFAULT 0,
-    click_rate REAL NOT NULL DEFAULT 0,
-    created_at TEXT NOT NULL
-  );
-
-  CREATE TABLE IF NOT EXISTS social_posts (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    platform TEXT NOT NULL,
-    content TEXT NOT NULL,
-    hashtags TEXT,
-    status TEXT NOT NULL DEFAULT 'queued',
-    scheduled_for TEXT,
-    posted_at TEXT,
-    engagement TEXT,
-    generated_by TEXT NOT NULL DEFAULT 'system',
-    created_at TEXT NOT NULL
-  );
-
-  CREATE TABLE IF NOT EXISTS analytics_events (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    event TEXT NOT NULL,
-    page TEXT,
-    user_id INTEGER,
-    session_id TEXT,
-    referrer TEXT,
-    properties TEXT,
-    created_at TEXT NOT NULL
-  );
-
-  CREATE TABLE IF NOT EXISTS ab_tests (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    description TEXT,
-    hypothesis TEXT,
-    metric TEXT NOT NULL,
-    variants TEXT NOT NULL,
-    results TEXT,
-    status TEXT NOT NULL DEFAULT 'running',
-    winner TEXT,
-    started_at TEXT NOT NULL,
-    concluded_at TEXT
-  );
-
-  CREATE TABLE IF NOT EXISTS growth_metrics (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    date TEXT NOT NULL UNIQUE,
-    dau INTEGER NOT NULL DEFAULT 0,
-    mau INTEGER NOT NULL DEFAULT 0,
-    new_signups INTEGER NOT NULL DEFAULT 0,
-    pro_upgrades INTEGER NOT NULL DEFAULT 0,
-    churned INTEGER NOT NULL DEFAULT 0,
-    total_searches INTEGER NOT NULL DEFAULT 0,
-    avg_session_min REAL NOT NULL DEFAULT 0,
-    revenue REAL NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL
   );
 
@@ -194,12 +70,117 @@ sqlite.exec(`
     created_at TEXT NOT NULL
   );
 
-  CREATE TABLE IF NOT EXISTS system_logs (
+  CREATE TABLE IF NOT EXISTS versions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    level TEXT NOT NULL DEFAULT 'info',
-    source TEXT NOT NULL,
-    message TEXT NOT NULL,
-    data TEXT,
+    version TEXT NOT NULL,
+    codename TEXT,
+    status TEXT NOT NULL DEFAULT 'draft',
+    changelog TEXT,
+    created_at TEXT NOT NULL,
+    deployed_at TEXT
+  );
+
+  CREATE TABLE IF NOT EXISTS feature_flags (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    key TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    enabled INTEGER NOT NULL DEFAULT 0,
+    rollout_pct INTEGER NOT NULL DEFAULT 0,
+    description TEXT,
+    updated_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS roadmap_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    description TEXT,
+    status TEXT NOT NULL DEFAULT 'planned',
+    votes INTEGER NOT NULL DEFAULT 0,
+    priority TEXT NOT NULL DEFAULT 'medium',
     created_at TEXT NOT NULL
   );
-`);
+
+  CREATE TABLE IF NOT EXISTS ad_campaigns (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    platform TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'active',
+    budget REAL NOT NULL DEFAULT 0,
+    spend REAL NOT NULL DEFAULT 0,
+    impressions INTEGER NOT NULL DEFAULT 0,
+    clicks INTEGER NOT NULL DEFAULT 0,
+    conversions INTEGER NOT NULL DEFAULT 0,
+    copy TEXT,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS email_sequences (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    trigger TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    body TEXT NOT NULL,
+    delay_days INTEGER NOT NULL DEFAULT 0,
+    sent_count INTEGER NOT NULL DEFAULT 0,
+    open_rate REAL NOT NULL DEFAULT 0,
+    active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS social_posts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    platform TEXT NOT NULL,
+    content TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'queued',
+    scheduled_at TEXT,
+    posted_at TEXT,
+    likes INTEGER NOT NULL DEFAULT 0,
+    shares INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS analytics_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event TEXT NOT NULL,
+    user_id INTEGER,
+    properties TEXT,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS ab_tests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'running',
+    variant_a TEXT NOT NULL,
+    variant_b TEXT NOT NULL,
+    metric TEXT NOT NULL DEFAULT 'conversion',
+    impressions_a INTEGER NOT NULL DEFAULT 0,
+    impressions_b INTEGER NOT NULL DEFAULT 0,
+    conversions_a INTEGER NOT NULL DEFAULT 0,
+    conversions_b INTEGER NOT NULL DEFAULT 0,
+    winner TEXT,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS growth_metrics (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    date TEXT NOT NULL UNIQUE,
+    dau INTEGER NOT NULL DEFAULT 0,
+    mau INTEGER NOT NULL DEFAULT 0,
+    revenue REAL NOT NULL DEFAULT 0,
+    searches INTEGER NOT NULL DEFAULT 0,
+    signups INTEGER NOT NULL DEFAULT 0,
+    pro_upgrades INTEGER NOT NULL DEFAULT 0,
+    churned INTEGER NOT NULL DEFAULT 0
+  );
+
+  CREATE TABLE IF NOT EXISTS system_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    level TEXT NOT NULL DEFAULT 'INFO',
+    source TEXT NOT NULL,
+    message TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  );
+  `);
+  console.log("[db] Tables initialized");
+}

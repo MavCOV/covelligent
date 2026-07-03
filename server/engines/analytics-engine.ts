@@ -13,8 +13,8 @@ import { eq, desc, sql, and, gte, lte } from "drizzle-orm";
 const now = () => new Date().toISOString();
 const today = () => new Date().toISOString().slice(0, 10);
 
-function log(level: string, message: string, data?: object) {
-  db.insert(systemLogs).values({
+async function log(level: string, message: string, data?: object) {
+  await db.insert(systemLogs).values({
     level, source: "analytics", message,
     data: data ? JSON.stringify(data) : null,
     createdAt: now(),
@@ -23,7 +23,7 @@ function log(level: string, message: string, data?: object) {
 
 // ─── Event Tracking ───────────────────────────────────────────────────────────
 
-export function trackEvent(
+export async function trackEvent(
   event: string,
   options: {
     page?: string;
@@ -33,7 +33,7 @@ export function trackEvent(
     properties?: Record<string, unknown>;
   } = {}
 ) {
-  db.insert(analyticsEvents).values({
+  await db.insert(analyticsEvents).values({
     event,
     page: options.page ?? null,
     userId: options.userId ?? null,
@@ -44,8 +44,8 @@ export function trackEvent(
   }).run();
 }
 
-export function getRecentEvents(limit = 50) {
-  return db.select().from(analyticsEvents)
+export async function getRecentEvents(limit = 50) {
+  return await db.select().from(analyticsEvents)
     .orderBy(desc(analyticsEvents.createdAt))
     .limit(limit)
     .all();
@@ -53,9 +53,9 @@ export function getRecentEvents(limit = 50) {
 
 // ─── Growth Metrics ───────────────────────────────────────────────────────────
 
-export function getGrowthMetrics(days = 14) {
+export async function getGrowthMetrics(days = 14) {
   try {
-    return db.select().from(growthMetrics)
+    return await db.select().from(growthMetrics)
       .orderBy(desc(growthMetrics.date))
       .limit(days)
       .all()
@@ -65,16 +65,16 @@ export function getGrowthMetrics(days = 14) {
   }
 }
 
-export function computeDailyMetrics() {
+export async function computeDailyMetrics() {
   const date = today();
   try {
-    const allUsers = db.select().from(users).all();
+    const allUsers = await db.select().from(users).all();
     const proUsers = allUsers.filter(u => u.plan === "pro");
     const dau = Math.max(allUsers.length, 1);
     const mau = Math.max(allUsers.length, 1);
     const revenue = proUsers.length * 24.99;
 
-    db.insert(growthMetrics).values({
+    await db.insert(growthMetrics).values({
       date,
       dau,
       mau,
@@ -93,7 +93,7 @@ export function computeDailyMetrics() {
 }
 
 /** Compute key growth KPIs */
-export function getGrowthKPIs() {
+export async function getGrowthKPIs() {
   const metrics = getGrowthMetrics(14);
   if (metrics.length < 2) return null;
 
@@ -122,7 +122,7 @@ export function getGrowthKPIs() {
 }
 
 /** Funnel conversion rates */
-export function getFunnelMetrics() {
+export async function getFunnelMetrics() {
   const metrics = getGrowthMetrics(30);
   const totalVisitors = metrics.reduce((s, m) => s + m.dau, 0);
   const totalSignups = metrics.reduce((s, m) => s + m.newSignups, 0);
@@ -138,8 +138,8 @@ export function getFunnelMetrics() {
 }
 
 /** Identify users at churn risk (simulated logic) */
-export function getChurnRiskUsers() {
-  const allUsers = db.select().from(users).all();
+export async function getChurnRiskUsers() {
+  const allUsers = await db.select().from(users).all();
   // In real system: filter by last login > 14 days, declining search frequency, etc.
   return allUsers.filter(u => u.plan === "pro").slice(0, 3).map(u => ({
     ...u,
@@ -150,12 +150,12 @@ export function getChurnRiskUsers() {
 }
 
 /** System health summary */
-export function getSystemHealth() {
+export async function getSystemHealth() {
   return {
     dbSizeKb: 0, // placeholder
-    totalEvents: db.select().from(analyticsEvents).all().length,
-    totalConversations: db.select().from(conversations).all().length,
-    totalSearches: db.select().from(searches).all().length,
+    totalEvents: await db.select().from(analyticsEvents).all().length,
+    totalConversations: await db.select().from(conversations).all().length,
+    totalSearches: await db.select().from(searches).all().length,
     uptime: process.uptime(),
     status: "healthy",
     lastMetricsRun: getGrowthMetrics(1)[0]?.date ?? "never",

@@ -1,114 +1,81 @@
 import { db } from "./db";
-import {
-  users, conversations, messages, searches, subscriptions,
-  type User, type InsertUser,
-  type Conversation, type InsertConversation,
-  type Message, type InsertMessage,
-  type Search, type InsertSearch,
-  type Subscription, type InsertSubscription,
-} from "@shared/schema";
+import { users, conversations, messages, searches, subscriptions } from "@shared/schema";
 import { eq, desc } from "drizzle-orm";
+import type {
+  User, InsertUser,
+  Conversation, InsertConversation,
+  Message, InsertMessage,
+  Search, InsertSearch,
+  Subscription, InsertSubscription,
+} from "@shared/schema";
 
-export interface IStorage {
+export class DatabaseStorage {
   // Users
-  getUser(id: number): User | undefined;
-  getUserByEmail(email: string): User | undefined;
-  createUser(user: InsertUser): User;
-  updateUserPlan(id: number, plan: string): User | undefined;
+  async getUser(id: number): Promise<User | undefined> {
+    const rows = await db.select().from(users).where(eq(users.id, id));
+    return rows[0];
+  }
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const rows = await db.select().from(users).where(eq(users.email, email));
+    return rows[0];
+  }
+  async createUser(user: InsertUser): Promise<User> {
+    const rows = await db.insert(users).values(user).returning();
+    return rows[0];
+  }
+  async updateUserPlan(id: number, plan: string): Promise<User | undefined> {
+    const rows = await db.update(users).set({ plan }).where(eq(users.id, id)).returning();
+    return rows[0];
+  }
 
   // Subscriptions
-  getSubscription(userId: number): Subscription | undefined;
-  upsertSubscription(data: InsertSubscription): Subscription;
+  async getSubscription(userId: number): Promise<Subscription | undefined> {
+    const rows = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId));
+    return rows[0];
+  }
+  async upsertSubscription(data: InsertSubscription): Promise<Subscription> {
+    const existing = await this.getSubscription(data.userId);
+    if (existing) {
+      const rows = await db.update(subscriptions).set(data).where(eq(subscriptions.userId, data.userId)).returning();
+      return rows[0];
+    }
+    const rows = await db.insert(subscriptions).values(data).returning();
+    return rows[0];
+  }
 
   // Conversations
-  getConversations(userId: number): Conversation[];
-  getConversation(id: number): Conversation | undefined;
-  createConversation(conv: InsertConversation): Conversation;
-  deleteConversation(id: number): void;
+  async getConversations(userId: number): Promise<Conversation[]> {
+    return db.select().from(conversations).where(eq(conversations.userId, userId)).orderBy(desc(conversations.createdAt));
+  }
+  async getConversation(id: number): Promise<Conversation | undefined> {
+    const rows = await db.select().from(conversations).where(eq(conversations.id, id));
+    return rows[0];
+  }
+  async createConversation(conv: InsertConversation): Promise<Conversation> {
+    const rows = await db.insert(conversations).values(conv).returning();
+    return rows[0];
+  }
+  async deleteConversation(id: number): Promise<void> {
+    await db.delete(messages).where(eq(messages.conversationId, id));
+    await db.delete(conversations).where(eq(conversations.id, id));
+  }
 
   // Messages
-  getMessages(conversationId: number): Message[];
-  createMessage(msg: InsertMessage): Message;
+  async getMessages(conversationId: number): Promise<Message[]> {
+    return db.select().from(messages).where(eq(messages.conversationId, conversationId)).orderBy(messages.createdAt);
+  }
+  async createMessage(msg: InsertMessage): Promise<Message> {
+    const rows = await db.insert(messages).values(msg).returning();
+    return rows[0];
+  }
 
   // Searches
-  getRecentSearches(userId: number, limit?: number): Search[];
-  createSearch(search: InsertSearch): Search;
-}
-
-export class DatabaseStorage implements IStorage {
-  getUser(id: number): User | undefined {
-    return db.select().from(users).where(eq(users.id, id)).get();
+  async getRecentSearches(userId: number, limit = 10): Promise<Search[]> {
+    return db.select().from(searches).where(eq(searches.userId, userId)).orderBy(desc(searches.createdAt)).limit(limit);
   }
-
-  getUserByEmail(email: string): User | undefined {
-    return db.select().from(users).where(eq(users.email, email)).get();
-  }
-
-  createUser(user: InsertUser): User {
-    return db.insert(users).values(user).returning().get();
-  }
-
-  updateUserPlan(id: number, plan: string): User | undefined {
-    return db.update(users).set({ plan }).where(eq(users.id, id)).returning().get();
-  }
-
-  getSubscription(userId: number): Subscription | undefined {
-    return db.select().from(subscriptions).where(eq(subscriptions.userId, userId)).get();
-  }
-
-  upsertSubscription(data: InsertSubscription): Subscription {
-    const existing = this.getSubscription(data.userId);
-    if (existing) {
-      return db.update(subscriptions)
-        .set(data)
-        .where(eq(subscriptions.userId, data.userId))
-        .returning()
-        .get();
-    }
-    return db.insert(subscriptions).values(data).returning().get();
-  }
-
-  getConversations(userId: number): Conversation[] {
-    return db.select().from(conversations)
-      .where(eq(conversations.userId, userId))
-      .orderBy(desc(conversations.createdAt))
-      .all();
-  }
-
-  getConversation(id: number): Conversation | undefined {
-    return db.select().from(conversations).where(eq(conversations.id, id)).get();
-  }
-
-  createConversation(conv: InsertConversation): Conversation {
-    return db.insert(conversations).values(conv).returning().get();
-  }
-
-  deleteConversation(id: number): void {
-    db.delete(messages).where(eq(messages.conversationId, id)).run();
-    db.delete(conversations).where(eq(conversations.id, id)).run();
-  }
-
-  getMessages(conversationId: number): Message[] {
-    return db.select().from(messages)
-      .where(eq(messages.conversationId, conversationId))
-      .orderBy(messages.createdAt)
-      .all();
-  }
-
-  createMessage(msg: InsertMessage): Message {
-    return db.insert(messages).values(msg).returning().get();
-  }
-
-  getRecentSearches(userId: number, limit = 10): Search[] {
-    return db.select().from(searches)
-      .where(eq(searches.userId, userId))
-      .orderBy(desc(searches.createdAt))
-      .limit(limit)
-      .all();
-  }
-
-  createSearch(search: InsertSearch): Search {
-    return db.insert(searches).values(search).returning().get();
+  async createSearch(search: InsertSearch): Promise<Search> {
+    const rows = await db.insert(searches).values(search).returning();
+    return rows[0];
   }
 }
 
