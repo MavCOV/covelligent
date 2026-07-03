@@ -1,17 +1,15 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertConversationSchema, insertMessageSchema, insertSearchSchema, insertUserSchema } from "@shared/schema";
+import { insertUserSchema } from "@shared/schema";
+import { all as dbAll } from "./db";
 
 // Engines
 import * as versionEngine from "./engines/version-engine";
 import * as marketingEngine from "./engines/marketing-engine";
 import * as analyticsEngine from "./engines/analytics-engine";
-import { db } from "./db";
 import { adminLogin, requireAdmin } from "./auth";
 import { createCheckoutSession, createPortalSession, handleWebhook } from "./stripe";
-import { systemLogs } from "@shared/schema";
-import { desc } from "drizzle-orm";
 
 // ─── Mock AI response ────────────────────────────────────────────────────────
 function generateAIResponse(query: string): { content: string; sources: string[] } {
@@ -70,9 +68,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   });
 
   app.post("/api/conversations", async (req, res) => {
-    const parsed = insertConversationSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ message: parsed.error.message });
-    res.status(201).json(await storage.createConversation(parsed.data));
+    const { userId, title } = req.body;
+    if (!userId || !title) return res.status(400).json({ message: "userId and title required" });
+    res.status(201).json(await storage.createConversation({ user_id: Number(userId), title }));
   });
 
   app.get("/api/conversations/:id", async (req, res) => {
@@ -97,16 +95,15 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     if (!conv) return res.status(404).json({ message: "Conversation not found" });
 
     await storage.createMessage({
-      conversationId: convId, role: "user",
-      content: req.body.content, sources: null, createdAt: new Date().toISOString(),
+      conversation_id: convId, role: "user",
+      content: req.body.content, sources: null,
     });
 
     const aiResponse = generateAIResponse(req.body.content);
     const assistantMsg = await storage.createMessage({
-      conversationId: convId, role: "assistant",
+      conversation_id: convId, role: "assistant",
       content: aiResponse.content,
       sources: JSON.stringify(aiResponse.sources),
-      createdAt: new Date().toISOString(),
     });
 
     // Track analytics
@@ -121,22 +118,20 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     if (!query) return res.status(400).json({ message: "Query required" });
 
     if (userId) {
-      await storage.createSearch({ userId, query, createdAt: new Date().toISOString() });
+      await storage.createSearch({ user_id: Number(userId), query });
     }
 
     const conv = await storage.createConversation({
-      userId: userId || 1,
+      user_id: Number(userId) || 1,
       title: query.length > 60 ? query.slice(0, 60) + "..." : query,
-      createdAt: new Date().toISOString(),
     });
 
-    await storage.createMessage({ conversationId: conv.id, role: "user", content: query, sources: null, createdAt: new Date().toISOString() });
+    await storage.createMessage({ conversation_id: conv.id, role: "user", content: query, sources: null });
     const aiResponse = generateAIResponse(query);
     const assistantMsg = await storage.createMessage({
-      conversationId: conv.id, role: "assistant",
+      conversation_id: conv.id, role: "assistant",
       content: aiResponse.content,
       sources: JSON.stringify(aiResponse.sources),
-      createdAt: new Date().toISOString(),
     });
 
     analyticsEngine.trackEvent("search", { userId, properties: { query: query.slice(0, 60) } });
@@ -267,10 +262,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
   app.get("/api/admin/system/logs", async (req, res) => {
     const limit = Number(req.query.limit) || 50;
-    const logs = db.select().from(systemLogs)
-      .orderBy(desc(systemLogs.createdAt))
-      .limit(limit)
-      .all();
+    const logs = await dbAll(
+      "SELECT * FROM system_logs ORDER BY created_at DESC LIMIT ?",
+      [limit]
+    );
     res.json(logs);
   });
 

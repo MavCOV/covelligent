@@ -22,9 +22,9 @@ export async function createCheckoutSession(req: Request, res: Response) {
   try {
     // Create or retrieve Stripe customer
     let customerId: string | undefined;
-    const existingSub = storage.getSubscription(userId);
-    if (existingSub?.stripeCustomerId) {
-      customerId = existingSub.stripeCustomerId;
+    const existingSub = await storage.getSubscription(Number(userId));
+    if (existingSub?.stripe_customer_id) {
+      customerId = existingSub.stripe_customer_id;
     } else {
       const customer = await stripe.customers.create({ email, name });
       customerId = customer.id;
@@ -57,12 +57,12 @@ export async function createPortalSession(req: Request, res: Response) {
   if (!stripe) return res.status(503).json({ message: "Payments not configured" });
 
   const { userId } = req.body;
-  const sub = storage.getSubscription(userId);
-  if (!sub?.stripeCustomerId) return res.status(404).json({ message: "No subscription found" });
+  const sub = await storage.getSubscription(Number(userId));
+  if (!sub?.stripe_customer_id) return res.status(404).json({ message: "No subscription found" });
 
   try {
     const session = await stripe.billingPortal.sessions.create({
-      customer: sub.stripeCustomerId,
+      customer: sub.stripe_customer_id,
       return_url: `${APP_URL}/#/app`,
     });
     res.json({ url: session.url });
@@ -97,33 +97,33 @@ export async function handleWebhook(req: Request, res: Response) {
     case "customer.subscription.updated": {
       const userId = Number(obj.metadata?.userId);
       if (!userId) break;
-      storage.upsertSubscription({
-        userId,
-        stripeCustomerId: obj.customer,
-        stripeSubscriptionId: obj.id,
+      await storage.upsertSubscription({
+        user_id: userId,
+        stripe_customer_id: obj.customer,
+        stripe_subscription_id: obj.id,
         status: obj.status,
         plan: obj.status === "active" || obj.status === "trialing" ? "pro" : "free",
-        currentPeriodEnd: new Date(obj.current_period_end * 1000).toISOString(),
-        createdAt: new Date().toISOString(),
+        current_period_end: new Date(obj.current_period_end * 1000).toISOString(),
+        created_at: new Date().toISOString(),
       });
       if (obj.status === "active" || obj.status === "trialing") {
-        storage.updateUserPlan(userId, "pro");
+        await storage.updateUserPlan(userId, "pro");
       }
       break;
     }
     case "customer.subscription.deleted": {
       const userId = Number(obj.metadata?.userId);
       if (!userId) break;
-      storage.upsertSubscription({
-        userId,
-        stripeCustomerId: obj.customer,
-        stripeSubscriptionId: obj.id,
+      await storage.upsertSubscription({
+        user_id: userId,
+        stripe_customer_id: obj.customer,
+        stripe_subscription_id: obj.id,
         status: "canceled",
         plan: "free",
-        currentPeriodEnd: null,
-        createdAt: new Date().toISOString(),
+        current_period_end: null,
+        created_at: new Date().toISOString(),
       });
-      storage.updateUserPlan(userId, "free");
+      await storage.updateUserPlan(userId, "free");
       break;
     }
   }

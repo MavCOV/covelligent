@@ -1,141 +1,118 @@
 /**
  * Covelligent Version Engine
  * Manages versioning, feature flags, changelogs, and roadmap progression.
- * Runs automatically on a schedule and can be triggered manually via admin.
+ * Uses raw SQL helpers (no Drizzle ORM).
  */
-import { db } from "../db";
-import {
-  versions, featureFlags, roadmapItems, systemLogs
-} from "@shared/schema";
-import { eq, desc, and } from "drizzle-orm";
+import { run, get, all } from "../db";
 
 const now = () => new Date().toISOString();
 
-async function log(level: string, message: string, data?: object) {
-  await db.insert(systemLogs).values({
-    level, source: "version_engine", message,
-    data: data ? JSON.stringify(data) : null,
-    createdAt: now(),
-  }).run();
+async function log(level: string, message: string) {
+  await run(
+    `INSERT INTO system_logs (level, source, message, created_at) VALUES (?, ?, ?, ?)`,
+    [level, "version_engine", message, now()]
+  );
 }
 
 /** Get the current live version */
 export async function getCurrentVersion() {
-  return await db.select().from(versions)
-    .where(eq(versions.status, "live"))
-    .orderBy(desc(versions.createdAt))
-    .get();
+  return get("SELECT * FROM versions WHERE status = 'live' ORDER BY created_at DESC LIMIT 1");
 }
 
 /** List all versions */
 export async function getAllVersions() {
-  return await db.select().from(versions).orderBy(desc(versions.createdAt)).all();
+  return all("SELECT * FROM versions ORDER BY created_at DESC");
 }
 
 /** Get all feature flags */
 export async function getFeatureFlags() {
-  return await db.select().from(featureFlags).all();
+  return all("SELECT * FROM feature_flags");
 }
 
 /** Toggle a feature flag */
 export async function toggleFeatureFlag(key: string, enabled: boolean) {
-  await db.update(featureFlags)
-    .set({ enabled: enabled ? 1 : 0, updatedAt: now() })
-    .where(eq(featureFlags.key, key))
-    .run();
+  await run(
+    `UPDATE feature_flags SET enabled = ?, updated_at = ? WHERE key = ?`,
+    [enabled ? 1 : 0, now(), key]
+  );
   log("info", `Feature flag '${key}' set to ${enabled ? "ON" : "OFF"}`);
 }
 
 /** Update rollout percentage */
 export async function setRolloutPct(key: string, pct: number) {
-  await db.update(featureFlags)
-    .set({ rolloutPct: pct, updatedAt: now() })
-    .where(eq(featureFlags.key, key))
-    .run();
+  await run(
+    `UPDATE feature_flags SET rollout_pct = ?, updated_at = ? WHERE key = ?`,
+    [pct, now(), key]
+  );
   log("info", `Feature flag '${key}' rollout set to ${pct}%`);
 }
 
 /** Get all roadmap items */
 export async function getRoadmap() {
-  return await db.select().from(roadmapItems)
-    .orderBy(roadmapItems.priority, desc(roadmapItems.votes))
-    .all();
+  return all("SELECT * FROM roadmap_items ORDER BY votes DESC, priority ASC");
 }
 
 /** Advance a roadmap item's status */
 export async function advanceRoadmapItem(id: number, status: string) {
-  const updates: Record<string, string | null> = { status };
-  if (status === "shipped") updates.shippedAt = now();
-  await db.update(roadmapItems).set(updates).where(eq(roadmapItems.id, id)).run();
+  await run(
+    `UPDATE roadmap_items SET status = ? WHERE id = ?`,
+    [status, id]
+  );
   log("info", `Roadmap item #${id} advanced to status: ${status}`);
 }
 
 /** Vote on a roadmap item */
 export async function voteRoadmapItem(id: number) {
-  const item = await db.select().from(roadmapItems).where(eq(roadmapItems.id, id)).get();
-  if (!item) return;
-  await db.update(roadmapItems)
-    .set({ votes: item.votes + 1 })
-    .where(eq(roadmapItems.id, id))
-    .run();
+  await run(
+    `UPDATE roadmap_items SET votes = votes + 1 WHERE id = ?`,
+    [id]
+  );
 }
 
 /** Auto-version bump: detects shipped roadmap items and generates a new version draft */
 export async function autoVersionBump() {
-  const recentlyShipped = await db.select().from(roadmapItems)
-    .where(and(
-      eq(roadmapItems.status, "shipped"),
-    ))
-    .all()
-    .filter(item => {
-      if (!item.shippedAt) return false;
-      const age = Date.now() - new Date(item.shippedAt).getTime();
-      return age < 7 * 86400000; // shipped in last 7 days
-    });
+  // No shipped_at column in simplified schema — just check for "shipped" status
+  const recentlyShipped = await all(
+    `SELECT * FROM roadmap_items WHERE status = 'shipped' LIMIT 10`
+  );
 
   if (recentlyShipped.length === 0) return null;
 
-  const current = getCurrentVersion();
+  const current = await getCurrentVersion();
   if (!current) return null;
 
-  const [major, minor, patch] = current.version.split(".").map(Number);
+  const [major, minor, patch] = (current.version as string).split(".").map(Number);
   const newVersion = `${major}.${minor + 1}.0`;
 
   // Check if this version draft already exists
-  const exists = await db.select().from(versions)
-    .where(eq(versions.version, newVersion))
-    .get();
+  const exists = await get(`SELECT id FROM versions WHERE version = ?`, [newVersion]);
   if (exists) return null;
-
-  const changes = recentlyShipped.map(item => ({
-    type: item.category,
-    text: item.title,
-  }));
 
   const codenames = ["Inlet", "Crest", "Tide", "Shoal", "Reef", "Atoll", "Bight", "Sound"];
   const codename = codenames[Math.floor(Math.random() * codenames.length)];
 
-  const draft = await db.insert(versions).values({
-    version: newVersion,
-    codename,
-    releaseNotes: `${newVersion} '${codename}' includes ${recentlyShipped.length} shipped item(s) from the roadmap: ${recentlyShipped.map(i => i.title).join(", ")}.`,
-    changes: JSON.stringify(changes),
-    status: "draft",
-    createdAt: now(),
-  }).returning().get();
+  const changelog = JSON.stringify(
+    recentlyShipped.map((item: any) => ({ type: "feature", text: item.title }))
+  );
 
-  log("success", `Auto-generated version draft ${newVersion} '${codename}' with ${changes.length} changes`, { versionId: draft.id });
+  await run(
+    `INSERT INTO versions (version, codename, status, changelog, created_at) VALUES (?, ?, ?, ?, ?)`,
+    [newVersion, codename, "draft", changelog, now()]
+  );
+
+  const draft = await get(`SELECT * FROM versions WHERE version = ?`, [newVersion]);
+  log("success", `Auto-generated version draft ${newVersion} '${codename}' with ${recentlyShipped.length} changes`);
   return draft;
 }
 
 /** Promote a draft version to live */
 export async function promoteVersion(id: number) {
   // Archive current live
-  const current = getCurrentVersion();
-  if (current) {
-    await db.update(versions).set({ status: "staging" }).where(eq(versions.id, current.id)).run();
-  }
+  await run(`UPDATE versions SET status = 'staging' WHERE status = 'live'`, []);
   // Set new live
-  await db.update(versions).set({ status: "live", deployedAt: now() }).where(eq(versions.id, id)).run();
+  await run(
+    `UPDATE versions SET status = 'live', deployed_at = ? WHERE id = ?`,
+    [now(), id]
+  );
   log("success", `Version #${id} promoted to live`);
 }
