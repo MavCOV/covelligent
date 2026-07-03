@@ -5,10 +5,8 @@ services:
     region: oregon
     plan: free
     buildCommand: npm install && node build.mjs
-    startCommand: node dist/index.cjs
+    startCommand: NODE_ENV=production npx tsx server/index.ts
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 5000
